@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم مطعم صمّام - المدير العام</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dir-ltr { direction: ltr; }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; }
+            .print-container { padding: 20px; width: 100%; }
+        }
+        .print-only { display: none; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+    <script async src="https://ga.jspm.io/npm:es-module-shims@1.7.0/dist/es-module-shims.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.263.1",
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+        }
+    }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useMemo } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+            LayoutDashboard, ShoppingBag, UtensilsCrossed, Settings, 
+            Menu, X, Plus, Trash2, Edit, Save, Loader2, Image as ImageIcon, 
+            Megaphone, Filter, Scale, Split, MousePointerClick, Palette, Tag, 
+            User, MapPin, Clock, Calendar, FileText, Printer, Lock, LogOut, BarChart3, TrendingUp, Users, ShieldCheck, RefreshCw, Percent
+        } from 'lucide-react';
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+        import { 
+            getFirestore, collection, addDoc, updateDoc, 
+            deleteDoc, doc, onSnapshot, serverTimestamp, setDoc, getDoc, writeBatch, getDocs 
+        } from 'firebase/firestore';
+
+        // --- إعدادات فايربيس ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0bLzrTbWlgiSyIo9YUsJIp07L_bCclfg",
+            authDomain: "samam-f3d54.firebaseapp.com",
+            projectId: "samam-f3d54",
+            storageBucket: "samam-f3d54.firebasestorage.app",
+            messagingSenderId: "635639197847",
+            appId: "1:635639197847:web:b61900b409114792a9b9d2",
+            measurementId: "G-GQKHFZRENQ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const FIXED_CATEGORIES = ["دجاج", "لحم", "رز", "طلبات جانبية", "المشروبات"];
+
+        // مكون تسجيل الدخول
+        const LoginScreen = ({ onLogin }) => {
+            const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (username === 'admin' && password === 'admin123') {
+                    onLogin(true);
+                    localStorage.setItem('isLoggedIn', 'true');
+                } else {
+                    setError('اسم المستخدم أو كلمة المرور غير صحيحة');
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-slate-900 p-4 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[url('images/hero 1.jpg (2).jpg')] bg-cover bg-center opacity-20 blur-sm"></div>
+                    <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8 w-full max-w-md fade-in relative z-10 border border-slate-700/50">
+                        <div className="text-center mb-8">
+                            <img src="images/logo red.png" alt="شعار صمّام" className="w-40 h-auto mx-auto mb-4 object-contain drop-shadow-xl" onError={(e) => e.target.src='https://via.placeholder.com/150?text=SAMAM'} />
+                            <h2 className="text-3xl font-bold text-slate-800">لوحة التحكم</h2>
+                            <p className="text-slate-500 text-sm mt-2">تسجيل دخول المدير العام</p>
+                        </div>
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">اسم المستخدم</label>
+                                <input 
+                                    type="text" 
+                                    value={username} 
+                                    onChange={(e) => setUsername(e.target.value)} 
+                                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition bg-slate-50" 
+                                    placeholder="Username"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">كلمة المرور</label>
+                                <input 
+                                    type="password" 
+                                    value={password} 
+                                    onChange={(e) => setPassword(e.target.value)} 
+                                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition bg-slate-50" 
+                                    placeholder="••••••••"
+                                />
+                            </div>
+                            {error && <p className="text-red-600 text-sm text-center font-bold bg-red-100 p-2 rounded border border-red-200">{error}</p>}
+                            <button className="w-full bg-orange-600 text-white py-4 rounded-lg font-bold hover:bg-orange-700 transition shadow-lg shadow-orange-500/30 text-lg">
+                                دخول
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        function App() {
+            const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('isLoggedIn') === 'true');
+            const [user, setUser] = useState(null);
+            const [activeTab, setActiveTab] = useState("dashboard");
+            const [sidebarOpen, setSidebarOpen] = useState(true);
+            const [loading, setLoading] = useState(true);
+            
+            // Security State
+            const [showSecurityModal, setShowSecurityModal] = useState(false);
+            const [pendingTab, setPendingTab] = useState(null);
+            const [pendingDeleteId, setPendingDeleteId] = useState(null); 
+            const SECURITY_PIN = "1234"; 
+            const SENSITIVE_TABS = ['history', 'menu', 'site-settings'];
+
+            const [orders, setOrders] = useState([]);
+            const [menuItems, setMenuItems] = useState([]);
+            const [discounts, setDiscounts] = useState([]);
+            const [analytics, setAnalytics] = useState({ total: 0, daily: {}, monthly: {} });
+            const [filterCategory, setFilterCategory] = useState("الكل");
+
+            // حالة السجل
+            const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+
+            // إعدادات الموقع ونقاط الإغلاق
+            const [siteSettings, setSiteSettings] = useState({
+                heroTitle: "مضغوط واكثر",
+                heroImage: "images/hero 1.jpg (2).jpg",
+                announcement: "",
+                showAnnouncement: false,
+                announcementBgColor: "#fef3c7",
+                announcementTextColor: "#92400e",
+                popupImage: "",
+                showPopup: false,
+                lastClosedAt: null, 
+                visitsAtLastClose: 0 
+            });
+
+            // Form States
+            const [showForm, setShowForm] = useState(false);
+            const [isEditing, setIsEditing] = useState(false);
+            const [currentItem, setCurrentItem] = useState(null);
+            
+            const [hasRiceSelection, setHasRiceSelection] = useState(false);
+            const [riceTypes, setRiceTypes] = useState([{ name: "رز مزه حبة طويل", price: 0 }, { name: "رز بشاور", price: 5 }]);
+            const [hasSizes, setHasSizes] = useState(false);
+            const [sizes, setSizes] = useState([{ name: "حبة كاملة", price: 0, plainPrice: 0, ricePrice: 0 }, { name: "نصف حبة", price: 0, plainPrice: 0, ricePrice: 0 }]);
+            const [hasPlainOption, setHasPlainOption] = useState(false);
+
+            useEffect(() => {
+                signInAnonymously(auth).catch(console.error);
+                return onAuthStateChanged(auth, (u) => setUser(u));
+            }, []);
+
+            useEffect(() => {
+                if (!user) return;
+                
+                const unsubMenu = onSnapshot(collection(db, 'menu'), (snap) => {
+                    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    items.sort((a, b) => (a.order || 999) - (b.order || 999));
+                    setMenuItems(items);
+                });
+                
+                const unsubOrders = onSnapshot(collection(db, 'orders'), (snap) => {
+                    const ords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    ords.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                    setOrders(ords);
+                });
+
+                const unsubDiscounts = onSnapshot(collection(db, 'discounts'), (snap) => {
+                    setDiscounts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+                });
+
+                const unsubAnalytics = onSnapshot(doc(db, 'analytics', 'visitors'), (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        const daily = {};
+                        const monthly = {};
+                        Object.keys(data).forEach(key => {
+                            if (key.startsWith('daily_')) daily[key.replace('daily_', '')] = data[key];
+                            if (key.startsWith('monthly_')) monthly[key.replace('monthly_', '')] = data[key];
+                        });
+                        setAnalytics({ total: data.total || 0, daily, monthly });
+                    }
+                });
+
+                const unsubSettings = onSnapshot(doc(db, 'settings', 'general'), (docSnap) => {
+                    if (docSnap.exists()) setSiteSettings(prev => ({...prev, ...docSnap.data()}));
+                    setLoading(false);
+                });
+                return () => { unsubMenu(); unsubOrders(); unsubDiscounts(); unsubAnalytics(); unsubSettings(); };
+            }, [user]);
+
+            const categories = useMemo(() => {
+                const dynamicCats = new Set(menuItems.map(i => i.category));
+                const allCats = new Set([...FIXED_CATEGORIES, ...dynamicCats]);
+                return ["الكل", ...Array.from(allCats)];
+            }, [menuItems]);
+
+            const filteredItems = filterCategory === "الكل" 
+                ? menuItems 
+                : menuItems.filter(i => i.category === filterCategory);
+
+            // --- حسابات لوحة القيادة ---
+            const currentSessionData = useMemo(() => {
+                const lastCloseTime = siteSettings.lastClosedAt?.seconds || 0;
+                const sessionOrders = orders.filter(o => (o.createdAt?.seconds || 0) > lastCloseTime);
+                const sessionRevenue = sessionOrders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+                const visitsBase = siteSettings.visitsAtLastClose || 0;
+                const sessionVisits = Math.max(0, analytics.total - visitsBase);
+                return { orders: sessionOrders, revenue: sessionRevenue, visits: sessionVisits };
+            }, [orders, analytics.total, siteSettings.lastClosedAt, siteSettings.visitsAtLastClose]);
+
+            // --- منطق السجل ---
+            const historyData = useMemo(() => {
+                if (!selectedDate) return { orders: [], total: 0 };
+                const filtered = orders.filter(o => {
+                    if (!o.createdAt) return false;
+                    const date = new Date(o.createdAt.seconds * 1000);
+                    const orderDateStr = date.toLocaleDateString('en-CA');
+                    return orderDateStr === selectedDate;
+                });
+                const total = filtered.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+                return { orders: filtered, total };
+            }, [orders, selectedDate]);
+            const historyVisits = analytics.daily[selectedDate] || 0;
+
+            const handleCloseDay = async () => {
+                if (!confirm("هل أنت متأكد من إغلاق اليوم؟")) return;
+                try {
+                    await updateDoc(doc(db, 'settings', 'general'), {
+                        lastClosedAt: serverTimestamp(), 
+                        visitsAtLastClose: analytics.total 
+                    });
+                    alert("تم إغلاق اليوم بنجاح!");
+                } catch (e) {
+                    alert("خطأ: " + e.message);
+                }
+            };
+
+            const handleDeleteOrder = (id) => {
+                setPendingDeleteId(id);
+                setShowSecurityModal(true);
+            };
+
+            // --- الخصم الجماعي ---
+            const handleApplyGlobalDiscount = async () => {
+                const discountVal = prompt("أدخل نسبة الخصم لجميع الأصناف (مثلاً 20)\nأدخل 0 لإلغاء الخصم");
+                if (discountVal === null) return;
+                
+                const percent = parseInt(discountVal);
+                if (isNaN(percent) || percent < 0 || percent > 100) return alert("رقم غير صحيح");
+
+                if (!confirm(`هل أنت متأكد من تطبيق خصم ${percent}% على جميع الأصناف؟`)) return;
+
+                setLoading(true);
+                try {
+                    const snap = await getDocs(collection(db, 'menu'));
+                    const batch = writeBatch(db);
+                    snap.forEach(doc => {
+                        batch.update(doc.ref, { discount: percent });
+                    });
+                    await batch.commit();
+                    alert("تم تحديث الخصومات بنجاح!");
+                } catch (e) {
+                    alert("حدث خطأ: " + e.message);
+                }
+                setLoading(false);
+            };
+
+            // --- Navigation & Security ---
+            const handleNavClick = (tabId) => {
+                if (SENSITIVE_TABS.includes(tabId)) {
+                    setPendingTab(tabId);
+                    setShowSecurityModal(true);
+                } else {
+                    setActiveTab(tabId);
+                    if(window.innerWidth < 768) setSidebarOpen(false);
+                }
+            };
+
+            const handleSecurityCheck = async (e) => {
+                e.preventDefault();
+                const pin = e.target.pin.value;
+                if (pin === SECURITY_PIN) {
+                    if (pendingDeleteId) {
+                        try {
+                            await deleteDoc(doc(db, 'orders', pendingDeleteId));
+                            alert("تم حذف الطلب بنجاح");
+                        } catch (e) {
+                            alert("خطأ أثناء الحذف: " + e.message);
+                        }
+                        setPendingDeleteId(null);
+                    } else if (pendingTab) {
+                        setActiveTab(pendingTab);
+                        setPendingTab(null);
+                        if(window.innerWidth < 768) setSidebarOpen(false);
+                    }
+                    setShowSecurityModal(false);
+                } else {
+                    alert("رمز الحماية غير صحيح!");
+                    e.target.reset();
+                }
+            };
+
+            // Handlers (CRUD)
+            const addRiceType = () => setRiceTypes([...riceTypes, { name: "", price: 0 }]);
+            const updateRiceName = (idx, val) => { const n = [...riceTypes]; n[idx].name = val; setRiceTypes(n); };
+            const updateRicePrice = (idx, val) => { const n = [...riceTypes]; n[idx].price = parseFloat(val) || 0; setRiceTypes(n); };
+            const removeRiceType = (idx) => setRiceTypes(riceTypes.filter((_, i) => i !== idx));
+
+            const addSize = () => setSizes([...sizes, { name: "", price: 0, plainPrice: 0, ricePrice: 0 }]);
+            const updateSizeName = (idx, val) => { const n = [...sizes]; n[idx].name = val; setSizes(n); };
+            const updateSizePrice = (idx, val) => { const n = [...sizes]; n[idx].price = parseFloat(val) || 0; setSizes(n); };
+            const updateSizePlainPrice = (idx, val) => { const n = [...sizes]; n[idx].plainPrice = parseFloat(val) || 0; setSizes(n); };
+            const updateSizeRicePrice = (idx, val) => { const n = [...sizes]; n[idx].ricePrice = parseFloat(val) || 0; setSizes(n); };
+            const removeSize = (idx) => setSizes(sizes.filter((_, i) => i !== idx));
+
+            const handleSaveItem = async (e) => {
+                e.preventDefault();
+                const form = new FormData(e.target);
+                let basePrice = parseFloat(form.get('price')) || 0;
+                if (hasSizes && sizes.length > 0) {
+                    basePrice = hasPlainOption ? sizes[0].ricePrice : sizes[0].price;
+                }
+                const data = {
+                    name: form.get('name'),
+                    price: basePrice, 
+                    order: parseInt(form.get('order')) || 999,
+                    discount: parseInt(form.get('discount')) || 0, // إضافة نسبة الخصم
+                    category: form.get('category'),
+                    image: form.get('image'),
+                    calories: form.get('calories'),
+                    hasRiceSelection: hasRiceSelection,
+                    riceTypes: hasRiceSelection ? riceTypes : [],
+                    hasSizes: hasSizes,
+                    hasPlainOption: hasPlainOption,
+                    sizes: hasSizes ? sizes : [],
+                    status: form.get('status'),
+                    updatedAt: serverTimestamp()
+                };
+                try {
+                    if (isEditing) await updateDoc(doc(db, 'menu', currentItem.id), data);
+                    else await addDoc(collection(db, 'menu'), { ...data, createdAt: serverTimestamp() });
+                    setShowForm(false);
+                } catch(e) { alert("خطأ: " + e.message); }
+            };
+
+            const handleSaveDiscount = async (e) => {
+                e.preventDefault();
+                const form = new FormData(e.target);
+                const data = {
+                    code: form.get('code').toUpperCase(),
+                    value: parseFloat(form.get('value')) / 100,
+                    perUserLimit: parseInt(form.get('perUserLimit')) || 1,
+                    active: true,
+                    createdAt: serverTimestamp()
+                };
+                try {
+                    await addDoc(collection(db, 'discounts'), data);
+                    setShowForm(false);
+                    alert("تم إضافة الكود بنجاح");
+                } catch(e) { alert("خطأ: " + e.message); }
+            };
+
+            const handleDeleteItem = async (id) => { if(confirm("حذف؟")) await deleteDoc(doc(db, 'menu', id)); };
+            const handleDeleteDiscount = async (id) => { if(confirm("حذف الكود؟")) await deleteDoc(doc(db, 'discounts', id)); };
+            const handleSaveSettings = async (e) => { e.preventDefault(); await setDoc(doc(db, 'settings', 'general'), siteSettings); alert("تم الحفظ!"); };
+            const toggleOrderStatus = async (o) => { const map = {'جديد':'جاري التحضير', 'جاري التحضير':'مكتمل', 'مكتمل':'مكتمل'}; await updateDoc(doc(db, 'orders', o.id), { status: map[o.status] }); };
+
+            const openForm = (item = null) => {
+                if (item) {
+                    setCurrentItem(item);
+                    setIsEditing(true);
+                    setHasRiceSelection(item.hasRiceSelection || item.hasRiceOptions || false);
+                    setRiceTypes(item.riceTypes && item.riceTypes.length > 0 ? (typeof item.riceTypes[0] === 'string' ? item.riceTypes.map(r => ({name: r, price: 0})) : item.riceTypes) : [{ name: "رز مزه حبة طويل", price: 0 }]);
+                    setHasSizes(item.hasSizes || false);
+                    setHasPlainOption(item.hasPlainOption || false);
+                    setSizes(item.sizes && item.sizes.length > 0 ? item.sizes : [{ name: "حبة كاملة", price: 0, plainPrice: 0, ricePrice: 0 }]);
+                } else {
+                    setCurrentItem(null);
+                    setIsEditing(false);
+                    setHasRiceSelection(false);
+                    setRiceTypes([{ name: "رز مزه حبة طويل", price: 0 }]);
+                    setHasSizes(false);
+                    setHasPlainOption(false);
+                    setSizes([{ name: "حبة كاملة", price: 0, plainPrice: 0, ricePrice: 0 }]);
+                }
+                setShowForm(true);
+            };
+
+            const handleLogout = () => { localStorage.removeItem('isLoggedIn'); setIsLoggedIn(false); };
+            const handlePrint = () => window.print();
+
+            if (!isLoggedIn) return <LoginScreen onLogin={setIsLoggedIn} />;
+            if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-orange-600 w-10 h-10"/></div>;
+            
+            const currentMonth = new Date().toLocaleDateString('en-CA').slice(0, 7);
+            const monthlyVisits = analytics.monthly[currentMonth] || 0;
+
+            return (
+                <div className="flex min-h-screen">
+                    {/* تقرير الطباعة */}
+                    <div className="print-only print-container">
+                        <div className="text-center mb-6">
+                            <h1 className="text-3xl font-bold">تقرير مبيعات مطعم صمّام</h1>
+                            <p className="text-lg mt-2">التاريخ: {selectedDate}</p>
+                        </div>
+                        <div className="border-2 border-black p-4 mb-4">
+                            <div className="flex justify-between text-xl font-bold"><span>إجمالي المبيعات:</span><span>{historyData.total} ر.س</span></div>
+                            <div className="flex justify-between text-lg mt-2"><span>عدد الطلبات:</span><span>{historyData.orders.length}</span></div>
+                        </div>
+                        <table className="w-full border text-right">
+                            <thead><tr className="border-b bg-gray-100"><th className="p-2 border">رقم الطلب</th><th className="p-2 border">العميل</th><th className="p-2 border">الإجمالي</th></tr></thead>
+                            <tbody>{historyData.orders.map((o, i) => (<tr key={i} className="border-b"><td className="p-2 border">#{String(o.createdAt?.seconds).slice(-4)}</td><td className="p-2 border">{o.customerName}</td><td className="p-2 border">{o.total} ر.س</td></tr>))}</tbody>
+                        </table>
+                    </div>
+
+                    <aside className={`fixed md:static w-64 bg-slate-900 text-white h-full z-20 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'} no-print`}>
+                        <div className="p-6 border-b border-slate-700 font-bold text-xl flex gap-3 items-center justify-center text-orange-500">
+                             <img src="images/logo p.png" className="w-16 h-16 object-contain" onError={(e) => e.target.style.display = 'none'} />
+                        </div>
+                        <nav className="p-4 space-y-2 flex-1">
+                            {[{id:'dashboard',icon:LayoutDashboard,l:'الرئيسية', restricted: false},{id:'orders',icon:ShoppingBag,l:'الطلبات الحالية', restricted: false},{id:'discounts',icon:Tag,l:'أكواد الخصم', restricted: false},{id:'history',icon:Calendar,l:'سجل الطلبات', restricted: true},{id:'menu',icon:Menu,l:'إدارة المنيو', restricted: true},{id:'site-settings',icon:Settings,l:'إعدادات الموقع', restricted: true}].map(i=>(
+                                <button key={i.id} onClick={()=>handleNavClick(i.id)} className={`w-full flex gap-3 p-3 rounded items-center ${activeTab===i.id?'bg-orange-600':'hover:bg-slate-800'} ${i.restricted ? 'justify-between' : ''}`}>
+                                    <div className="flex gap-3 items-center"><i.icon size={20}/> <span>{i.l}</span></div>
+                                    {i.restricted && <Lock size={14} className="text-slate-500" />}
+                                </button>
+                            ))}
+                        </nav>
+                        <div className="p-4 border-t border-slate-700">
+                            <button onClick={handleLogout} className="w-full flex gap-3 p-3 rounded text-red-400 hover:bg-slate-800 hover:text-red-300 transition"><LogOut size={20}/> تسجيل خروج</button>
+                        </div>
+                    </aside>
+
+                    <main className="flex-1 flex flex-col h-screen overflow-hidden no-print">
+                        <header className="h-16 border-b bg-white flex items-center justify-between px-6 shadow-sm z-10">
+                            <button onClick={()=>setSidebarOpen(!sidebarOpen)} className="md:hidden"><Menu/></button>
+                            <h2 className="font-bold text-lg">{activeTab === 'history' ? 'الأرشيف والتقارير' : activeTab === 'menu' ? 'إدارة القائمة' : 'لوحة التحكم'}</h2>
+                        </header>
+                        
+                        <div className="flex-1 overflow-auto p-6 bg-slate-50">
+                            
+                            {activeTab === 'dashboard' && (
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl text-white shadow-lg">
+                                            <div className="flex justify-between items-start mb-4"><div className="p-2 bg-white/20 rounded-lg"><Users size={24}/></div><span className="text-xs bg-white/20 px-2 py-1 rounded">الحالية</span></div>
+                                            <p className="text-sm text-blue-100">زيارات اليوم (بعد الإغلاق)</p><p className="text-3xl font-bold">{currentSessionData.visits}</p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl text-white shadow-lg">
+                                            <div className="flex justify-between items-start mb-4"><div className="p-2 bg-white/20 rounded-lg"><BarChart3 size={24}/></div><span className="text-xs bg-white/20 px-2 py-1 rounded">الشهر</span></div>
+                                            <p className="text-sm text-purple-100">زيارات الشهر</p><p className="text-3xl font-bold">{monthlyVisits}</p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 rounded-xl text-white shadow-lg">
+                                            <div className="flex justify-between items-start mb-4"><div className="p-2 bg-white/20 rounded-lg"><TrendingUp size={24}/></div><span className="text-xs bg-white/20 px-2 py-1 rounded">الإجمالي</span></div>
+                                            <p className="text-sm text-emerald-100">إجمالي الزيارات</p><p className="text-3xl font-bold">{analytics.total}</p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="bg-white p-6 rounded-xl border shadow-sm"><p className="text-gray-500">أصناف المنيو</p><p className="text-3xl font-bold">{menuItems.length}</p></div>
+                                        <div className="bg-white p-6 rounded-xl border shadow-sm"><p className="text-gray-500">طلبات اليوم</p><p className="text-3xl font-bold text-blue-600">{currentSessionData.orders.length}</p></div>
+                                        <div className="bg-white p-6 rounded-xl border shadow-sm"><p className="text-gray-500">مبيعات اليوم</p><p className="text-3xl font-bold text-green-600">{currentSessionData.revenue} ر.س</p></div>
+                                    </div>
+                                    <div className="bg-white p-6 rounded-xl border shadow-sm flex flex-wrap gap-4 justify-between items-center">
+                                        <div><h3 className="text-xl font-bold text-slate-800 mb-1">التقرير اليومي وإغلاق الوردية</h3><p className="text-slate-500 text-sm">تصفير العدادات وبدء فترة مبيعات جديدة</p></div>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => { setSelectedDate(new Date().toISOString().split('T')[0]); handleNavClick('history'); }} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-3 rounded-lg font-bold flex gap-2 items-center"><FileText size={18}/> السجل</button>
+                                            <button onClick={handleCloseDay} className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold flex gap-2 items-center"><RefreshCw size={18}/> إغلاق اليوم</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'menu' && (
+                                <div>
+                                    <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+                                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                            {categories.map(c => (
+                                                <button key={c} onClick={() => setFilterCategory(c)} className={`px-4 py-2 rounded-full text-sm font-bold transition-colors border whitespace-nowrap ${filterCategory === c ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>{c}</button>
+                                            ))}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button onClick={handleApplyGlobalDiscount} className="bg-purple-600 text-white px-4 py-2 rounded-lg flex gap-2 font-bold hover:bg-purple-700 whitespace-nowrap"><Percent size={18}/> خصم جماعي</button>
+                                            <button onClick={() => openForm()} className="bg-orange-600 text-white px-4 py-2 rounded-lg flex gap-2 font-bold hover:bg-orange-700 whitespace-nowrap"><Plus size={18}/> إضافة صنف</button>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {filteredItems.map(item => (
+                                            <div key={item.id} className="bg-white p-4 rounded-xl border shadow-sm flex justify-between items-start group relative">
+                                                <div className="flex gap-4">
+                                                    <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
+                                                        {item.image ? <img src={item.image} className="w-full h-full object-cover"/> : <span className="flex items-center justify-center h-full">🥘</span>}
+                                                        {item.discount > 0 && <span className="absolute top-0 right-0 bg-red-600 text-white text-[10px] px-1 font-bold">-{item.discount}%</span>}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h4 className="font-bold">{item.name}</h4>
+                                                        <div className="flex flex-wrap gap-1 mt-1">
+                                                            <span className="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-600">{item.category}</span>
+                                                            <span className="text-xs bg-blue-50 px-2 py-0.5 rounded text-blue-600">#{item.order || 999}</span>
+                                                        </div>
+                                                        <div className="mt-2 font-bold text-orange-600">{item.price} ر.س</div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => openForm(item)} className="p-2 bg-gray-100 rounded hover:bg-gray-200"><Edit size={16}/></button>
+                                                    <button onClick={() => handleDeleteItem(item.id)} className="p-2 bg-red-50 text-red-600 rounded hover:bg-red-100"><Trash2 size={16}/></button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* باقي الأقسام (Orders, History, Discounts, Settings) نفس الكود السابق */}
+                            {activeTab === 'history' && (
+                                <div className="space-y-6">
+                                    <div className="bg-white p-6 rounded-xl border shadow-sm flex flex-wrap gap-4 items-end justify-between">
+                                        <div><label className="block text-sm font-bold text-gray-700 mb-2">تاريخ السجل</label><input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="p-2 border rounded-lg bg-gray-50 text-lg font-bold"/></div>
+                                        <div className="flex gap-4"><div className="text-center px-6 py-2 bg-green-50 rounded-lg border border-green-100"><p className="text-xs text-gray-500">المبيعات</p><p className="text-xl font-bold text-green-700">{historyData.total} ر.س</p></div><div className="text-center px-6 py-2 bg-blue-50 rounded-lg border border-blue-100"><p className="text-xs text-gray-500">الطلبات</p><p className="text-xl font-bold text-blue-700">{historyData.orders.length}</p></div></div>
+                                        <button onClick={handlePrint} className="bg-slate-800 text-white px-4 py-2 rounded-lg flex gap-2 items-center hover:bg-slate-700"><Printer size={18}/> طباعة</button>
+                                    </div>
+                                    <div className="bg-white rounded-xl border overflow-hidden shadow-sm">
+                                        <table className="w-full text-right text-sm">
+                                            <thead className="bg-slate-50 text-gray-500"><tr><th className="p-4">العميل</th><th className="p-4">التفاصيل</th><th className="p-4">الوقت</th><th className="p-4">الإجمالي</th></tr></thead>
+                                            <tbody className="divide-y">
+                                                {historyData.orders.map(o => (<tr key={o.id} className="hover:bg-slate-50"><td className="p-4 font-bold">{o.customerName}<br/><span className="text-xs text-gray-400 font-normal">{o.phone}</span></td><td className="p-4 text-xs max-w-xs">{o.itemsString}</td><td className="p-4 text-xs">{o.orderDateKSA ? o.orderDateKSA.split(',')[1] : '-'}</td><td className="p-4 font-bold text-green-600">{o.total} ر.س</td></tr>))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'orders' && (
+                                <div className="bg-white rounded-xl border overflow-hidden">
+                                    <table className="w-full text-right text-sm">
+                                        <thead className="bg-slate-50 text-gray-500"><tr><th className="p-4">رقم / العميل</th><th className="p-4">التفاصيل</th><th className="p-4">الاستلام</th><th className="p-4">الوقت</th><th className="p-4">الحالة</th><th className="p-4">إجراء</th></tr></thead>
+                                        <tbody className="divide-y">
+                                            {orders.map(o=>(<tr key={o.id} className="hover:bg-slate-50"><td className="p-4"><div className="font-bold text-slate-800">{o.customerName}</div><div className="text-xs text-gray-500">{o.phone}</div></td><td className="p-4"><div className="max-w-xs text-xs">{o.itemsString}</div><div className="font-bold text-orange-600 mt-1">{o.total} ر.س</div></td><td className="p-4"><div className="text-xs font-bold">{o.deliveryType}</div><div className="text-xs text-green-600">{o.paymentType}</div></td><td className="p-4 text-xs text-gray-500">{o.orderDateKSA || '-'}</td><td className="p-4"><span className="px-2 py-1 rounded text-xs font-bold bg-blue-100 text-blue-700">{o.status}</span></td><td className="p-4 flex gap-2"><button onClick={()=>toggleOrderStatus(o)} className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">تغيير الحالة</button><button onClick={() => handleDeleteOrder(o.id)} className="bg-red-100 text-red-600 px-3 py-1 rounded text-xs hover:bg-red-200">حذف</button></td></tr>))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            {activeTab === 'discounts' && (
+                                <div className="max-w-4xl mx-auto">
+                                    <div className="flex justify-between items-center mb-6"><h3 className="font-bold text-xl flex gap-2 items-center"><Tag className="text-orange-600"/> إدارة أكواد الخصم</h3><button onClick={() => setShowForm(true)} className="bg-orange-600 text-white px-4 py-2 rounded-lg flex gap-2 font-bold hover:bg-orange-700"><Plus size={18}/> إضافة</button></div>
+                                    <div className="bg-white rounded-xl border overflow-hidden shadow-sm"><table className="w-full text-right text-sm"><thead className="bg-slate-50 text-gray-500"><tr><th className="p-4">الكود</th><th className="p-4">الخصم</th><th className="p-4">حد الاستخدام</th><th className="p-4">إجراء</th></tr></thead><tbody className="divide-y">{discounts.map(d => (<tr key={d.id}><td className="p-4 font-bold font-mono text-lg">{d.code}</td><td className="p-4 text-green-600 font-bold">{(d.value * 100)}%</td><td className="p-4">{d.perUserLimit}</td><td className="p-4"><button onClick={() => handleDeleteDiscount(d.id)} className="text-red-500 hover:bg-red-50 p-2 rounded"><Trash2 size={16}/></button></td></tr>))}</tbody></table></div>
+                                </div>
+                            )}
+
+                            {activeTab === 'site-settings' && (
+                                <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl border shadow-sm">
+                                    <h3 className="font-bold text-xl mb-6">إعدادات الموقع</h3>
+                                    <form onSubmit={handleSaveSettings} className="space-y-6">
+                                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100"><div className="flex justify-between items-center mb-2"><label className="font-bold">الشريط الإعلاني</label><input type="checkbox" checked={siteSettings.showAnnouncement} onChange={e => setSiteSettings({...siteSettings, showAnnouncement: e.target.checked})} className="w-5 h-5"/></div><input type="text" value={siteSettings.announcement} onChange={e => setSiteSettings({...siteSettings, announcement: e.target.value})} className="w-full p-2 border rounded bg-white mb-2"/><div className="flex gap-2"><input type="color" value={siteSettings.announcementBgColor} onChange={e => setSiteSettings({...siteSettings, announcementBgColor: e.target.value})}/><input type="color" value={siteSettings.announcementTextColor} onChange={e => setSiteSettings({...siteSettings, announcementTextColor: e.target.value})}/></div></div>
+                                        <div className="p-4 bg-purple-50 rounded-lg border border-purple-100"><div className="flex justify-between items-center mb-2"><label className="font-bold">الإعلان المنبثق</label><input type="checkbox" checked={siteSettings.showPopup} onChange={e => setSiteSettings({...siteSettings, showPopup: e.target.checked})} className="w-5 h-5"/></div><input type="text" value={siteSettings.popupImage} onChange={e => setSiteSettings({...siteSettings, popupImage: e.target.value})} placeholder="رابط صورة" className="w-full p-2 border rounded bg-white dir-ltr"/></div>
+                                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200"><label className="block font-bold mb-2">صورة الهيرو</label><input type="text" value={siteSettings.heroImage} onChange={e => setSiteSettings({...siteSettings, heroImage: e.target.value})} className="w-full p-2 border rounded bg-white mb-2 dir-ltr"/><label className="block font-bold mb-2">العنوان الرئيسي</label><input type="text" value={siteSettings.heroTitle} onChange={e => setSiteSettings({...siteSettings, heroTitle: e.target.value})} className="w-full p-2 border rounded bg-white"/></div>
+                                        <button className="w-full bg-slate-900 text-white py-3 rounded-lg font-bold">حفظ</button>
+                                    </form>
+                                </div>
+                            )}
+
+                        </div>
+                    </main>
+
+                    {/* SECURITY MODAL */}
+                    {showSecurityModal && (
+                        <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
+                            <div className="bg-white rounded-xl p-8 w-full max-w-sm text-center shadow-2xl relative">
+                                <button onClick={() => { setShowSecurityModal(false); setPendingTab(null); setPendingDeleteId(null); }} className="absolute top-4 left-4 text-gray-400 hover:text-red-500"><X/></button>
+                                <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4"><ShieldCheck size={32}/></div>
+                                <h3 className="text-xl font-bold mb-2">{pendingDeleteId ? "تأكيد الحذف" : "منطقة محمية"}</h3>
+                                <p className="text-gray-500 mb-6">{pendingDeleteId ? "هذا الإجراء سيحذف الطلب نهائياً." : "أدخل الرمز للوصول"}</p>
+                                <form onSubmit={handleSecurityCheck}><input type="password" name="pin" maxLength="4" className="w-full text-center text-3xl font-bold p-3 border-2 rounded-lg mb-4" placeholder="••••" autoFocus/><button className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-bold">{pendingDeleteId ? "حذف نهائي" : "دخول"}</button></form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* FORM MODAL */}
+                    {showForm && (
+                        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                            <div className="bg-white p-6 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
+                                <button onClick={() => setShowForm(false)} className="absolute top-4 left-4"><X/></button>
+                                {activeTab === 'discounts' ? (
+                                    <form onSubmit={handleSaveDiscount} className="space-y-4">
+                                        <input name="code" placeholder="الكود" className="w-full p-2 border rounded" required />
+                                        <input name="value" type="number" placeholder="النسبة %" className="w-full p-2 border rounded" required />
+                                        <input name="perUserLimit" type="number" placeholder="حد الاستخدام" className="w-full p-2 border rounded" required />
+                                        <button className="w-full bg-orange-600 text-white py-3 rounded">حفظ</button>
+                                    </form>
+                                ) : (
+                                    <form onSubmit={handleSaveItem} className="space-y-4">
+                                        <div className="flex gap-4"><div className="flex-[3]"><label>الاسم</label><input name="name" defaultValue={currentItem?.name} className="w-full p-2 border rounded" required /></div><div className="flex-1"><label>الترتيب</label><input name="order" type="number" defaultValue={currentItem?.order} className="w-full p-2 border rounded"/></div></div>
+                                        {/* خانة الخصم الجديدة */}
+                                        <div className="bg-red-50 p-2 rounded flex items-center gap-2 border border-red-100">
+                                            <Tag size={16} className="text-red-600"/>
+                                            <label className="text-sm font-bold text-red-700">نسبة الخصم (%):</label>
+                                            <input name="discount" type="number" min="0" max="100" defaultValue={currentItem?.discount || 0} className="w-20 p-1 border rounded text-center"/>
+                                        </div>
+
+                                        <div className="bg-blue-50 p-3 rounded">
+                                            <div className="flex justify-between"><label>أحجام؟</label><input type="checkbox" checked={hasSizes} onChange={e=>setHasSizes(e.target.checked)}/></div>
+                                            {hasSizes && <div className="mt-2"><label>سادة/رز؟</label><input type="checkbox" checked={hasPlainOption} onChange={e=>setHasPlainOption(e.target.checked)}/></div>}
+                                            {hasSizes ? (
+                                                <div className="mt-2 space-y-2">
+                                                    <div className="flex gap-2 text-xs font-bold px-1"><span>الحجم</span>{hasPlainOption ? <><span>سادة</span><span>رز</span></> : <span>السعر</span>}<span></span></div>
+                                                    {sizes.map((s,i)=>(<div key={i} className="flex gap-1"><input value={s.name} onChange={e=>updateSizeName(i,e.target.value)} className="w-full p-1 border"/>{hasPlainOption ? <><input type="number" value={s.plainPrice} onChange={e=>updateSizePlainPrice(i,e.target.value)} className="w-full p-1 border"/><input type="number" value={s.ricePrice} onChange={e=>updateSizeRicePrice(i,e.target.value)} className="w-full p-1 border"/></> : <input type="number" value={s.price} onChange={e=>updateSizePrice(i,e.target.value)} className="w-full p-1 border"/>}<button type="button" onClick={()=>removeSize(i)} className="text-red-500">X</button></div>))}
+                                                    <button type="button" onClick={addSize} className="text-blue-600 text-sm">+ حجم</button>
+                                                </div>
+                                            ) : (
+                                                <input name="price" type="number" defaultValue={currentItem?.price} placeholder="السعر" className="w-full p-2 border rounded mt-2"/>
+                                            )}
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2"><select name="category" defaultValue={currentItem?.category} className="w-full p-2 border rounded">{FIXED_CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}</select><input name="calories" defaultValue={currentItem?.calories} placeholder="السعرات" className="w-full p-2 border rounded"/></div>
+                                        <div className="bg-yellow-50 p-3 rounded">
+                                            <div className="flex justify-between"><label>خيارات رز؟</label><input type="checkbox" checked={hasRiceSelection} onChange={e=>setHasRiceSelection(e.target.checked)}/></div>
+                                            {hasRiceSelection && (
+                                                <div className="mt-2 space-y-2">
+                                                    {riceTypes.map((r,i)=>(<div key={i} className="flex gap-1"><input value={r.name} onChange={e=>updateRiceName(i,e.target.value)} className="w-1/2 p-1 border"/><input type="number" value={r.price} onChange={e=>updateRicePrice(i,e.target.value)} className="w-1/4 p-1 border"/><button type="button" onClick={()=>removeRiceType(i)} className="text-red-500">X</button></div>))}
+                                                    <button type="button" onClick={addRiceType} className="text-blue-600 text-sm">+ نوع</button>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <input name="image" defaultValue={currentItem?.image} placeholder="صورة" className="w-full p-2 border rounded dir-ltr"/>
+                                        <select name="status" defaultValue={currentItem?.status} className="w-full p-2 border rounded"><option value="متاح">متاح</option><option value="غير متاح">غير متاح</option></select>
+                                        <button className="w-full bg-orange-600 text-white py-3 rounded">حفظ</button>
+                                    </form>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
