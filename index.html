@@ -89,6 +89,250 @@
       }
       
       img[src=""] { display: none; }
+
+      /* --- تنسيقات النوافذ المنبثقة (Modal) --- */
+      .track-modal-overlay, .profile-modal-overlay, .rating-modal-overlay {
+          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(0,0,0,0.5); z-index: 3000;
+          display: none; align-items: center; justify-content: center;
+          backdrop-filter: blur(5px);
+      }
+      .track-modal, .profile-modal, .rating-modal {
+          background: white; width: 90%; max-width: 450px;
+          border-radius: 20px; padding: 25px;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+          position: relative;
+          max-height: 85vh; overflow-y: auto;
+          border: 1px solid rgba(255,255,255,0.8);
+          text-align: center;
+      }
+      .track-modal h3, .profile-modal h3, .rating-modal h3 { 
+          margin-top: 0; color: #333; text-align: center; margin-bottom: 20px; 
+          font-family: 'Cairo', sans-serif; font-weight: 700;
+      }
+      .track-close {
+          position: absolute; top: 15px; left: 15px;
+          font-size: 24px; cursor: pointer; color: #999; transition: 0.3s;
+      }
+      .track-close:hover { color: #d84315; }
+
+      .order-status-card {
+          border: 1px solid #f0f0f0; border-radius: 12px; padding: 15px; margin-bottom: 12px;
+          background: #fff; transition: 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      }
+      .order-status-card:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.08); transform: translateY(-2px); }
+      .status-badge {
+          display: inline-block; padding: 5px 12px; border-radius: 20px;
+          font-size: 11px; font-weight: bold; margin-bottom: 8px;
+      }
+      .status-جديد { background: #e0f2fe; color: #0369a1; }
+      .status-جاري-التحضير { background: #fef3c7; color: #b45309; }
+      .status-مكتمل { background: #dcfce7; color: #15803d; }
+      
+      .track-input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+      .track-btn { background: #e65100; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+      .track-btn:hover { background: #bf360c; }
+
+      /* --- تنسيقات التقييم (النجوم) --- */
+      .star-rating {
+          display: flex;
+          flex-direction: row-reverse;
+          justify-content: center;
+          gap: 10px;
+          margin: 20px 0;
+      }
+      .star-rating input { display: none; }
+      .star-rating label {
+          font-size: 30px;
+          color: #ddd;
+          cursor: pointer;
+          transition: color 0.2s;
+      }
+      .star-rating input:checked ~ label,
+      .star-rating label:hover,
+      .star-rating label:hover ~ label {
+          color: #ffc107;
+      }
+      .rating-textarea {
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ddd;
+          border-radius: 10px;
+          resize: none;
+          height: 80px;
+          margin-bottom: 15px;
+          font-family: inherit;
+      }
+      .submit-rating-btn {
+          background: #d21d40;
+          color: white;
+          border: none;
+          padding: 10px 25px;
+          border-radius: 20px;
+          font-weight: bold;
+          cursor: pointer;
+          width: 100%;
+          margin-bottom: 10px;
+      }
+      .google-map-btn {
+          background: #fff;
+          color: #4285F4;
+          border: 1px solid #4285F4;
+          padding: 10px 25px;
+          border-radius: 20px;
+          font-weight: bold;
+          cursor: pointer;
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          text-decoration: none;
+          margin-top: 10px;
+      }
+      .google-map-btn:hover { background: #f0f8ff; }
+
+      /* --- تنسيقات المستخدم في الهيدر (محسنة) --- */
+      .header-left-group {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          margin-right: auto;
+      }
+      .header-user-btn {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: white;
+          border: 1px solid #eee;
+          padding: 6px 15px;
+          border-radius: 25px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          color: #444;
+          font-family: inherit;
+          font-weight: 700;
+          font-size: 14px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      }
+      .header-user-btn:hover {
+          background: #fff8e1;
+          border-color: #ffb300;
+          color: #e65100;
+          box-shadow: 0 4px 10px rgba(255, 179, 0, 0.2);
+          transform: translateY(-1px);
+      }
+      
+      /* --- تعديل: ستايل زر الزائر الدائري --- */
+      .header-user-btn.visitor-mode {
+          width: 42px;
+          height: 42px;
+          padding: 0;
+          border-radius: 50%;
+          justify-content: center;
+      }
+      .header-user-btn.visitor-mode span:not(.header-user-icon) {
+          display: none;
+      }
+
+      /* 🔥 تصميم الزر عند تسجيل الدخول (صورة فقط - دائري) 🔥 */
+      .header-user-btn.logged-in-style {
+          background: #fff;
+          color: #e65100;
+          border-radius: 50%;
+          width: 45px;
+          height: 45px;
+          padding: 0;
+          justify-content: center;
+          border-color: #fff;
+          overflow: hidden; /* لضمان قص الصورة */
+      }
+      
+      .header-user-avatar {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          object-fit: cover;
+          border: none;
+          box-shadow: none;
+      }
+
+      .header-user-icon {
+          font-size: 18px;
+          color: #ff9800; /* لون برتقالي للأيقونة */
+      }
+
+      /* Dropdown Menu for User */
+      .user-dropdown {
+          position: absolute;
+          top: 65px;
+          left: 10px; /* محاذاة لليسار */
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+          width: 200px;
+          display: none;
+          z-index: 2500;
+          overflow: hidden;
+          border: 1px solid #f0f0f0;
+          animation: slideDown 0.2s ease-out;
+      }
+      @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      .user-dropdown.show { display: block; }
+      .user-dropdown-item {
+          padding: 12px 20px;
+          border-bottom: 1px solid #f8f8f8;
+          cursor: pointer;
+          font-size: 14px;
+          transition: background 0.2s;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: #555;
+      }
+      .user-dropdown-item:hover { background: #fff8e1; color: #e65100; }
+      .user-dropdown-item:last-child { border-bottom: none; color: #d32f2f; }
+      /* لا نريد أن يكون زر جوجل أو الزائر أحمر */
+      .user-dropdown-item.logout-item { color: #d32f2f; }
+      .user-dropdown-item.logout-item:hover { background: #ffebee; color: #b71c1c; }
+
+      /* --- تنسيقات الملف الشخصي --- */
+      .profile-info { text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+      .profile-avatar-large { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #e65100; margin-bottom: 10px; }
+      .profile-name-large { font-size: 18px; font-weight: bold; color: #333; }
+      .profile-email { font-size: 13px; color: #777; }
+      .order-date { font-size: 12px; color: #888; display: block; margin-top: 5px; }
+
+      /* === 🔥 تحسينات الموبايل لزر الدخول 🔥 === */
+      @media (max-width: 768px) {
+          /* إخفاء النص في زر الدخول على الشاشات الصغيرة */
+          .header-user-btn span:not(.header-user-icon) {
+              display: none;
+          }
+          /* تحويل الزر إلى دائرة صغيرة */
+          .header-user-btn {
+              padding: 8px;
+              border-radius: 50%;
+              width: 40px;
+              height: 40px;
+              justify-content: center;
+          }
+          .header-user-avatar {
+              margin: 0; /* توسيط الصورة */
+          }
+          /* تقليل المسافات */
+          .header-left-group {
+              gap: 8px;
+          }
+          .cart-container {
+              margin-right: 5px;
+          }
+          /* تعديل القائمة المنسدلة للموبايل */
+          .user-dropdown {
+              width: 180px;
+              left: 5px;
+          }
+      }
   </style>
 </head>
 <body>
@@ -114,17 +358,37 @@
       <nav class="mobile-menu" id="mobileMenu">
         <ul>
           <li><a href="#" onclick="window.scrollTo(0,0); return false;">الرئيسية</a></li>
+          <li><a href="#" id="openTrackModalBtn" style="color: #fdf2d4; font-weight: bold;">تتبع طلبك 🚚</a></li>
           <li><a href="#" id="toggleAboutBtn">من نحن</a></li>
           <li><a href="#menu">قائمة الطعام</a></li>
           <li><a href="#contact-footer">اتصل بنا</a></li>
         </ul>
       </nav>
 
-      <div class="cart-container">
-        <img src="https://cdn-icons-png.flaticon.com/512/833/833314.png" alt="السلة" class="cart-icon" />
-        <span class="cart-count">0</span>
+      <!-- مجموعة اليسار (سلة + مستخدم) -->
+      <div class="header-left-group">
+          
+          <!-- زر المستخدم (يسار السلة) -->
+          <div id="headerUserContainer" style="position: relative;">
+              <!-- الزر الآن أيقونة فقط في الحالتين (زائر أو مسجل) -->
+              <button id="headerUserBtn" class="header-user-btn visitor-mode" title="تسجيل الدخول">
+                  <span class="header-user-icon">👤</span>
+                  <!-- النص مخفي بالـ CSS -->
+                  <span>دخول</span>
+              </button>
+              <div id="userDropdown" class="user-dropdown">
+                  <!-- محتوى القائمة يتم تعبئته بواسطة JS حسب الحالة -->
+              </div>
+          </div>
+
+          <div class="cart-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/833/833314.png" alt="السلة" class="cart-icon" />
+            <span class="cart-count">0</span>
+          </div>
+
       </div>
-    </div>
+
+  </div>
 </header>
 
 <section class="hero-section">
@@ -190,10 +454,10 @@
   <!-- حاويات الأقسام -->
   <div class="menu-items">
     <div id="chicken" class="menu-group"></div>
-    <div id="meat" class="menu-group" style="display:none;"></div>
-    <div id="rice" class="menu-group" style="display:none;"></div>
-    <div id="sides" class="menu-group" style="display:none;"></div>
-    <div id="drinks" class="menu-group" style="display:none;"></div>
+    <div id="meat" class="menu-group"></div>
+    <div id="rice" class="menu-group"></div>
+    <div id="sides" class="menu-group"></div>
+    <div id="drinks" class="menu-group"></div>
     
     <div id="loading-msg" style="text-align: center; width: 100%; padding: 40px; color: #666; font-size: 1.2em;">
       <span style="display:inline-block; animation: spin 1s linear infinite">⏳</span> جاري تحميل القائمة...
@@ -247,7 +511,7 @@
   </div>
 
   <div class="cartSlider-discount">
-    <label>كود الخصم:</label>
+    <label>كود الخصم (يتطلب تسجيل دخول):</label>
     <div style="display:flex; gap:5px;">
         <input type="text" id="discountCode_v2" placeholder="ادخل الكود" style="flex:1;">
         <button id="applyDiscountBtn_v2">تطبيق</button>
@@ -258,6 +522,66 @@
   <div class="cartSlider-total" id="cartTotal_v2">المجموع: 0 ريال</div>
 
   <button class="cartSlider-send" id="sendOrder_v2">إرسال الطلب عبر واتساب</button>
+</div>
+
+<!-- نافذة تتبع الطلب (Modal) -->
+<div class="track-modal-overlay" id="trackModalOverlay">
+    <div class="track-modal">
+        <span class="track-close" id="closeTrackModal">&times;</span>
+        <h3>تتبع حالة طلبك</h3>
+        <p style="text-align:center; color:#666; font-size:14px; margin-bottom:15px;">ادخل رقم الجوال الذي قمت بالطلب به</p>
+        
+        <div class="track-input-group">
+            <input type="tel" id="trackPhoneInput" class="cart-input" placeholder="05xxxxxxxx" style="margin-bottom:0;">
+            <button id="searchOrderBtn" class="track-btn">بحث</button>
+        </div>
+
+        <div id="trackResults">
+            <!-- سيتم عرض الطلبات هنا -->
+        </div>
+    </div>
+</div>
+
+<!-- نافذة الملف الشخصي (Profile Modal) -->
+<div class="profile-modal-overlay" id="profileModalOverlay">
+    <div class="profile-modal">
+        <span class="track-close" id="closeProfileModal">&times;</span>
+        <h3>الملف الشخصي</h3>
+        <div id="profileContent">
+            <!-- سيتم تعبئة البيانات هنا بواسطة JS -->
+            <div style="text-align:center; color:#666;">جاري التحميل...</div>
+        </div>
+        <hr style="margin: 20px 0; border:0; border-top:1px solid #eee;">
+        <h4 style="margin-bottom:15px; color:#e65100;">سجل طلباتي السابقة</h4>
+        <div id="userOrdersList">
+            <!-- قائمة الطلبات -->
+        </div>
+    </div>
+</div>
+
+<!-- نافذة التقييم (Rating Modal) -->
+<div class="rating-modal-overlay" id="ratingModalOverlay">
+    <div class="rating-modal">
+        <h3>شكراً لطلبك! كيف كانت تجربتك؟ 🌟</h3>
+        <div class="star-rating">
+            <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="5 نجوم">★</label>
+            <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 نجوم">★</label>
+            <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 نجوم">★</label>
+            <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 نجوم">★</label>
+            <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="نجمة واحدة">★</label>
+        </div>
+        <textarea id="ratingComment" class="rating-textarea" placeholder="اكتب تعليقك هنا..."></textarea>
+        <button id="submitRatingBtn" class="submit-rating-btn">إرسال التقييم</button>
+        <button id="closeRatingModal" style="background:transparent; color:#666; border:none; margin-top:10px; cursor:pointer;">إغلاق</button>
+        
+        <div id="googleMapLinkContainer" style="display:none; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
+            <p style="font-size:14px; color:#555;">نشكرك على تقييمك! هل يمكنك دعمنا بتقييم على جوجل ماب؟</p>
+            <a href="https://www.google.com/maps/place/%D8%B5%D9%85%D9%91%D8%A7%D9%85+%7C+SAMAM%E2%80%AD/@21.4794463,39.3315865,17z/data=!3m1!4b1!4m6!3m5!1s0x15c233003dffe0a5:0x3e53f78849ed6cf6!8m2!3d21.4794463!4d39.3315865!16s%2Fg%2F11yrtyzfnf?entry=ttu&g_ep=EgoyMDI2MDIwOS4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="google-map-btn">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg" width="20" alt="Google Maps">
+                تقييم على خرائط جوجل
+            </a>
+        </div>
+    </div>
 </div>
 
 <footer class="site-footer" id="contact-footer">
@@ -298,6 +622,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getFirestore, collection, getDocs, doc, getDoc, addDoc, serverTimestamp, query, where, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -311,8 +636,11 @@
   };
 
   const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
   const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
 
+  let currentUser = null;
   let cartItems = [];
   const deliveryFee = 15;
   let appliedDiscount = 0;
@@ -320,7 +648,276 @@
   
   const categoryMap = {'دجاج':'chicken','لحم':'meat','رز':'rice','طلبات جانبية':'sides','المشروبات':'drinks'};
 
+  // --- استرجاع السلة من الذاكرة (Persistence) ---
+  const savedCart = localStorage.getItem('samam_cart');
+  if (savedCart) {
+      try {
+          cartItems = JSON.parse(savedCart);
+      } catch(e) {
+          console.error("خطأ في قراءة السلة", e);
+      }
+  }
+
+  // --- إدارة زر المستخدم في الهيدر ---
+  const headerUserBtn = document.getElementById('headerUserBtn');
+  const userDropdown = document.getElementById('userDropdown');
+  const headerLogoutBtn = document.getElementById('headerLogoutBtn');
+  const openProfileBtn = document.getElementById('openProfileBtn');
+  const openTrackBtnMobile = document.getElementById('openTrackModalBtnMobile');
+
+  // تعديل: دالة لربط الأحداث بالعناصر التي يتم إنشاؤها ديناميكياً
+  function attachDropdownListeners() {
+      // عناصر قائمة الدخول (زائر أو جوجل)
+      const loginVisitorBtn = document.getElementById('loginVisitorBtn');
+      const loginGoogleBtn = document.getElementById('loginGoogleBtn');
+      
+      // عناصر قائمة المستخدم (الملف الشخصي والخروج)
+      const profileBtn = document.getElementById('openProfileBtn');
+      const logoutBtn = document.getElementById('headerLogoutBtn');
+
+      if (loginVisitorBtn) loginVisitorBtn.addEventListener('click', handleVisitorLogin);
+      if (loginGoogleBtn) loginGoogleBtn.addEventListener('click', handleGoogleLogin);
+      
+      if (profileBtn) profileBtn.addEventListener('click', () => {
+          if (!currentUser) return;
+          const profileModal = document.getElementById('profileModalOverlay');
+          const userDropdown = document.getElementById('userDropdown');
+          profileModal.style.display = 'flex';
+          userDropdown.classList.remove('show');
+          loadUserProfile();
+      });
+      if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+  }
+
+  // تعديل: زر الدخول دائماً يفتح القائمة (Dropdown)
+  if (headerUserBtn) {
+      headerUserBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          // في كل الحالات (مسجل أو زائر) نفتح القائمة، ومحتواها يختلف
+          userDropdown.classList.toggle('show');
+      });
+  }
+
+  // إغلاق القائمة عند النقر خارجها
+  document.addEventListener('click', (e) => {
+      if (userDropdown && userDropdown.classList.contains('show') && !headerUserBtn.contains(e.target)) {
+          userDropdown.classList.remove('show');
+      }
+  });
+
+  // --- دالة تسجيل الدخول بجوجل ---
+  async function handleGoogleLogin() {
+      console.log("Starting Google Login...");
+      try {
+          await setPersistence(auth, browserLocalPersistence);
+          await signInWithPopup(auth, provider);
+          console.log("Google Login Success");
+      } catch (error) {
+          console.error("Google Login Failed:", error);
+          alert(`عذراً، حدث خطأ أثناء تسجيل الدخول.`);
+      }
+  }
+
+  // --- دالة تسجيل الدخول كزائر ---
+  async function handleVisitorLogin() {
+      console.log("Starting Anonymous Login...");
+      try {
+          await setPersistence(auth, browserLocalPersistence);
+          await signInAnonymously(auth);
+          console.log("Anonymous Login Success");
+      } catch (error) {
+          console.error("Anonymous Login Failed:", error);
+          alert(`عذراً، حدث خطأ أثناء تسجيل الدخول كزائر.`);
+      }
+  }
+
+  // --- دالة تسجيل الخروج ---
+  function handleLogout() {
+      signOut(auth).then(() => {
+          alert("تم تسجيل الخروج بنجاح");
+          location.reload();
+      }).catch((error) => {
+          console.error(error);
+          alert("حدث خطأ أثناء تسجيل الخروج");
+      });
+  }
+
+  // --- مراقبة حالة المستخدم ---
+  onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      updateUserUI(user);
+  });
+
+  function updateUserUI(user) {
+      const headerBtn = document.getElementById('headerUserBtn');
+      const dropdown = document.getElementById('userDropdown');
+      if (!headerBtn || !dropdown) return;
+
+      if (user) {
+          // --- حالة تسجيل الدخول ---
+          headerBtn.classList.remove('visitor-mode');
+          headerBtn.classList.add('logged-in-style');
+
+          // استخدام صورة جوجل إذا وجدت، أو صورة افتراضية للزائر
+          // fallback icon for anonymous users or missing photos
+          const avatarUrl = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; 
+          
+          headerBtn.innerHTML = `
+              <img src="${avatarUrl}" class="header-user-avatar" alt="User">
+          `;
+
+          // محتوى القائمة للمستخدم المسجل
+          dropdown.innerHTML = `
+              <div class="user-dropdown-item" id="openProfileBtn">📂 طلباتي السابقة</div>
+              <div class="user-dropdown-item logout-item" id="headerLogoutBtn">🚪 تسجيل خروج</div>
+          `;
+      } else {
+          // --- حالة الزائر (غير مسجل) ---
+          headerBtn.classList.remove('logged-in-style');
+          headerBtn.classList.add('visitor-mode'); 
+          headerBtn.innerHTML = `
+              <span class="header-user-icon">👤</span>
+              <!-- النص مخفي بـ CSS -->
+              <span>دخول</span>
+          `;
+          
+          // محتوى القائمة للزائر (خيارات الدخول)
+          dropdown.innerHTML = `
+              <div class="user-dropdown-item" id="loginVisitorBtn" style="font-weight:bold;">🕶️ متابعة كزائر</div>
+              <div class="user-dropdown-item" id="loginGoogleBtn" style="font-weight:bold;">🇬 دخول بجوجل</div>
+          `;
+      }
+      
+      // ربط الأحداث بالعناصر الجديدة في القائمة
+      attachDropdownListeners();
+  }
+
+  // --- منطق الملف الشخصي (Profile & History) ---
+  const profileModal = document.getElementById('profileModalOverlay');
+  const closeProfileBtn = document.getElementById('closeProfileModal');
+  
+  if(closeProfileBtn) closeProfileBtn.addEventListener('click', () => { profileModal.style.display = 'none'; });
+  if(profileModal) profileModal.addEventListener('click', (e) => { if(e.target === profileModal) profileModal.style.display = 'none'; });
+
+  async function loadUserProfile() {
+      const content = document.getElementById('profileContent');
+      const ordersList = document.getElementById('userOrdersList');
+      
+      // التعامل مع صورة الزائر (Anonymous)
+      const avatarUrl = currentUser.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+      const displayName = currentUser.displayName || (currentUser.isAnonymous ? 'زائر' : 'عميلنا');
+      const displayEmail = currentUser.email || 'حساب زائر (مؤقت)';
+
+      content.innerHTML = `
+          <div class="profile-info">
+              <img src="${avatarUrl}" class="profile-avatar-large">
+              <div class="profile-name-large">${displayName}</div>
+              <div class="profile-email">${displayEmail}</div>
+          </div>
+      `;
+      
+      ordersList.innerHTML = '<p style="text-align:center;">جاري تحميل الطلبات...</p>';
+      
+      try {
+          const q = query(collection(db, "orders"), where("userId", "==", currentUser.uid));
+          const querySnapshot = await getDocs(q);
+          
+          if(querySnapshot.empty) {
+              ordersList.innerHTML = '<p style="text-align:center; color:#777;">لا توجد طلبات سابقة.</p>';
+          } else {
+              let html = '';
+              const orders = [];
+              querySnapshot.forEach((doc) => { orders.push({id: doc.id, ...doc.data()}); });
+              
+              // ترتيب تنازلي (الأحدث أولاً)
+              orders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+              orders.forEach(order => {
+                  const statusClass = `status-${order.status.replace(/\s+/g, '-')}`;
+                  const itemsSummary = order.itemsString.split('\n')[0] + (order.itemsString.split('\n').length > 1 ? ' ...' : '');
+                  
+                  html += `
+                      <div class="order-status-card">
+                          <div style="display:flex; justify-content:space-between; align-items:center;">
+                              <span style="font-weight:bold; color:#e65100;">#${String(order.createdAt?.seconds || '').slice(-4)}</span>
+                              <div class="status-badge ${statusClass}">${order.status}</div>
+                          </div>
+                          <span class="order-date">${order.orderDateKSA || 'غير متوفر'}</span>
+                          <hr style="margin:8px 0; border:0; border-top:1px dashed #eee;">
+                          <p style="font-size:13px; color:#555; margin-bottom:5px;">${itemsSummary}</p>
+                          <div style="font-weight:bold; font-size:14px; text-align:left;">${order.total} ر.س</div>
+                      </div>
+                  `;
+              });
+              ordersList.innerHTML = html;
+          }
+      } catch (e) {
+          console.error(e);
+          ordersList.innerHTML = '<p style="color:red; text-align:center;">حدث خطأ في تحميل الطلبات.</p>';
+      }
+  }
+
+  // --- منطق التقييم (Rating Logic) ---
+  const ratingModal = document.getElementById('ratingModalOverlay');
+  const closeRatingBtn = document.getElementById('closeRatingModal');
+  const submitRatingBtn = document.getElementById('submitRatingBtn');
+  const ratingComment = document.getElementById('ratingComment');
+  const ratingStars = document.querySelectorAll('input[name="rating"]');
+  const googleMapLinkContainer = document.getElementById('googleMapLinkContainer');
+
+  function openRatingModal() {
+      // Reset form
+      ratingStars.forEach(s => s.checked = false);
+      ratingComment.value = "";
+      googleMapLinkContainer.style.display = 'none';
+      submitRatingBtn.style.display = 'block';
+      ratingModal.style.display = 'flex';
+  }
+
+  if (closeRatingBtn) closeRatingBtn.addEventListener('click', () => { ratingModal.style.display = 'none'; });
+
+  if (submitRatingBtn) {
+      submitRatingBtn.addEventListener('click', async () => {
+          let selectedRating = 0;
+          ratingStars.forEach(s => { if(s.checked) selectedRating = s.value; });
+          
+          if (selectedRating === 0) {
+              alert("الرجاء اختيار عدد النجوم");
+              return;
+          }
+
+          const comment = ratingComment.value.trim();
+          submitRatingBtn.innerText = "جاري الإرسال...";
+          submitRatingBtn.disabled = true;
+
+          try {
+              // --- 🔥 تعديل: إضافة البريد والصورة في التقييم 🔥 ---
+              await addDoc(collection(db, 'ratings'), {
+                  rating: parseInt(selectedRating),
+                  comment: comment,
+                  customerName: currentUser ? currentUser.displayName : 'زائر',
+                  customerId: currentUser ? currentUser.uid : null,
+                  customerEmail: currentUser ? currentUser.email : null, // إضافة الإيميل
+                  customerPhoto: currentUser ? currentUser.photoURL : null, // إضافة الصورة
+                  createdAt: serverTimestamp()
+              });
+
+              // Show success UI inside modal
+              submitRatingBtn.style.display = 'none';
+              googleMapLinkContainer.style.display = 'block';
+              
+          } catch (e) {
+              console.error(e);
+              alert("حدث خطأ أثناء إرسال التقييم");
+              submitRatingBtn.innerText = "إرسال التقييم";
+              submitRatingBtn.disabled = false;
+          }
+      });
+  }
+
+
   async function trackVisit() {
+      if (sessionStorage.getItem('visited')) return;
       const analyticsRef = doc(db, 'analytics', 'visitors');
       const today = new Date().toLocaleDateString('en-CA');
       const currentMonth = today.slice(0, 7);
@@ -331,11 +928,13 @@
           } else {
               await updateDoc(analyticsRef, { total: increment(1), [`daily_${today}`]: increment(1), [`monthly_${currentMonth}`]: increment(1) });
           }
+          sessionStorage.setItem('visited', 'true');
       } catch (e) { console.log("Analytics Error (Silent):", e); }
   }
 
   async function loadData() {
     trackVisit();
+    updateCartUI(); // تحديث السلة عند بدء التحميل من الذاكرة
     const loadingMsg = document.getElementById('loading-msg');
     try {
       const settingsDoc = await getDoc(doc(db, 'settings', 'general'));
@@ -436,7 +1035,7 @@
 
   document.querySelectorAll('.mobile-menu a').forEach(link => {
       link.addEventListener('click', (e) => {
-          if (link.id !== 'toggleAboutBtn') { mobileMenu.classList.remove('open'); }
+          if (link.id !== 'toggleAboutBtn' && link.id !== 'openTrackModalBtn') { mobileMenu.classList.remove('open'); }
       });
   });
 
@@ -486,7 +1085,8 @@
 
   window.selectSize = function(btn) {
       const card = btn.closest('.menu-item-card');
-      card.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+      const sizeBtns = card.querySelectorAll('.size-btn');
+      sizeBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       calculateCardPrice(btn);
       validateSelection(card);
@@ -638,6 +1238,9 @@
       if(discountVal > 0) totalHTML += `<div style="color:green">خصم (${appliedCodeName}): -${discountVal.toFixed(1)} ر.س</div>`;
       totalHTML += `<div style="font-weight:bold; font-size:1.2em; margin-top:5px;">الإجمالي: ${finalTotal.toFixed(1)} ر.س</div>`;
       totalEl.innerHTML = totalHTML;
+
+      // حفظ السلة في الذاكرة المحلية
+      localStorage.setItem('samam_cart', JSON.stringify(cartItems));
   }
 
   window.changeCartQty = function(idx, change) { if (cartItems[idx]) { cartItems[idx].qty += change; if (cartItems[idx].qty < 1) cartItems[idx].qty = 1; updateCartUI(); } };
@@ -665,21 +1268,61 @@
       const code = codeInput.value.trim().toUpperCase();
       const msg = document.getElementById('discountMessage_v2');
       const btn = document.getElementById('applyDiscountBtn_v2');
+      
       if (!code) return;
+      
+      // Condition 1: Not logged in OR Logged in anonymously
+      if (!currentUser || currentUser.isAnonymous) {
+          // Trigger Google Login directly
+          handleGoogleLogin();
+          return;
+      }
+
       btn.innerText = "جاري التحقق..."; btn.disabled = true;
       try {
           const q = query(collection(db, "discounts"), where("code", "==", code));
           const querySnapshot = await getDocs(q);
-          if (querySnapshot.empty) { msg.innerText = "كود غير صالح"; msg.style.color = "red"; appliedDiscount = 0; appliedCodeName = ""; } 
+          if (querySnapshot.empty) { 
+              msg.innerText = "كود غير صالح"; 
+              msg.style.color = "red"; 
+              appliedDiscount = 0; 
+              appliedCodeName = ""; 
+          } 
           else {
-              let discountData = null; querySnapshot.forEach((doc) => { discountData = doc.data(); });
+              let discountData = null; 
+              querySnapshot.forEach((doc) => { discountData = doc.data(); });
+              
               if (discountData && discountData.active) {
-                  const usageKey = `discount_usage_${code}`; const currentUsage = parseInt(localStorage.getItem(usageKey) || "0");
-                  if (currentUsage >= discountData.perUserLimit) { msg.innerText = "تجاوزت حد الاستخدام"; msg.style.color = "red"; appliedDiscount = 0; appliedCodeName = ""; } 
-                  else { appliedDiscount = discountData.value; appliedCodeName = code; msg.innerText = `تم خصم ${(appliedDiscount * 100)}%`; msg.style.color = "green"; }
-              } else { msg.innerText = "الكود غير فعال"; msg.style.color = "red"; appliedDiscount = 0; }
+                  // Check usage in Firestore using userID and code (One-time usage check)
+                  // We check query collection 'discount_usage'
+                  const usageQuery = query(collection(db, 'discount_usage'), 
+                      where('userId', '==', currentUser.uid),
+                      where('code', '==', code)
+                  );
+                  const usageSnap = await getDocs(usageQuery);
+                  
+                  if (usageSnap.size >= discountData.perUserLimit) {
+                      msg.innerText = "لقد استخدمت هذا الكود مسبقاً";
+                      msg.style.color = "red";
+                      appliedDiscount = 0;
+                      appliedCodeName = "";
+                  } else {
+                      appliedDiscount = discountData.value;
+                      appliedCodeName = code;
+                      msg.innerText = `تم خصم ${(appliedDiscount * 100)}%`;
+                      msg.style.color = "green";
+                  }
+              } else { 
+                  msg.innerText = "الكود غير فعال"; 
+                  msg.style.color = "red"; 
+                  appliedDiscount = 0; 
+              }
           }
-      } catch (error) { msg.innerText = "خطأ في التحقق"; msg.style.color = "red"; }
+      } catch (error) { 
+          console.error(error);
+          msg.innerText = "خطأ في التحقق"; 
+          msg.style.color = "red"; 
+      }
       btn.innerText = "تطبيق"; btn.disabled = false; updateCartUI();
   });
 
@@ -696,35 +1339,112 @@
           const address = document.getElementById('addressDetail').value.trim();
           const landmark = document.getElementById('landmark').value.trim();
           if (!address) return alert("الرجاء إدخال العنوان");
-          extraDetails = `📍 العنوان: ${address}\n📌 علامة مميزة: ${landmark}`;
+          extraDetails = `العنوان: ${address}\nعلامة مميزة: ${landmark}`;
       } else if (deliveryMethod === 'تسليم إلى السيارة') {
           const type = document.getElementById('carType').value.trim();
           const plate = document.getElementById('carPlate').value.trim();
           if (!type || !plate) return alert("بيانات السيارة مطلوبة");
-          extraDetails = `🚗 سيارة: ${type} - ${plate}`;
+          extraDetails = `السيارة: ${type} - ${plate}`;
       }
 
-      let msg = `*طلب جديد* 🛍️\n------------------\n👤 ${name}\n📞 ${phone}\n------------------\n`;
+      // تجهيز رسالة الواتساب بالتنسيق الجديد (بدون إيموجي)
       let subtotal = 0;
-      const itemsDetails = cartItems.map(item => {
-          const itemTotal = item.price * item.qty; subtotal += itemTotal;
-          let detail = `▪️ ${item.title} ${item.size} (x${item.qty})`;
+      let itemsMsg = "";
+      const itemsDetailsForDb = cartItems.map(item => {
+          subtotal += item.price * item.qty;
+          
+          // بناء جزء الرسالة الخاص بهذا الصنف
+          itemsMsg += `الصنف: ${item.title} ${item.size}\n`;
+          if (item.rice) {
+              itemsMsg += `نوع الرز: ${item.rice}\n`;
+          }
+          itemsMsg += `الكمية: ${item.qty}\n`;
+          itemsMsg += `----------------\n`;
+
+          // بناء نص التفاصيل لقاعدة البيانات (مختصر)
+          let detail = `- ${item.title} ${item.size} (عدد ${item.qty})`;
           if (item.rice) detail += ` [رز: ${item.rice}]`;
           return detail;
       }).join('\n');
-      msg += itemsDetails + '\n------------------\n';
-      const finalTotal = document.getElementById('cartTotal_v2').innerText.split('الإجمالي: ')[1];
-      msg += `💵 *الإجمالي: ${finalTotal}*\n💳 ${paymentMethod}\n🚚 ${deliveryMethod}\n${extraDetails ? extraDetails : ''}`;
+
+      const isDelivery = deliveryMethod === 'توصيل';
+      const currentDeliveryFee = isDelivery ? deliveryFee : 0;
+      const discountVal = subtotal * appliedDiscount;
+      const finalTotalVal = subtotal + currentDeliveryFee - discountVal;
+
+      let msg = `*طلب جديد من موقع صمّام*\n`;
+      msg += `========================\n`;
+      msg += `*بيانات العميل*\n`;
+      msg += `الاسم: ${name}\n`;
+      msg += `الجوال: ${phone}\n`;
+      msg += `========================\n`;
+      msg += `*تفاصيل الطلب*\n`;
+      msg += itemsMsg;
+      
+      msg += `المجموع الفرعي: ${subtotal.toFixed(1)} ريال\n`;
+      
+      if (currentDeliveryFee > 0) {
+          msg += `رسوم التوصيل: ${currentDeliveryFee} ريال\n`;
+      }
+      
+      if (discountVal > 0) {
+          msg += `الخصم: -${discountVal.toFixed(1)} ريال\n`;
+      }
+      
+      msg += `*المجموع الكلي: ${finalTotalVal.toFixed(1)} ريال*\n`;
+      msg += `========================\n`;
+      msg += `طريقة الدفع: ${paymentMethod}\n`;
+      msg += `طريقة الاستلام: ${deliveryMethod}\n`;
+      
+      if (extraDetails) {
+          msg += `\n*تفاصيل الاستلام:*\n${extraDetails}\n`;
+      }
 
       const now = new Date();
       const ksaDateString = now.toLocaleString('ar-SA', { timeZone: 'Asia/Riyadh', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
 
       try {
-          await addDoc(collection(db, 'orders'), {
-              itemsString: itemsDetails, total: finalTotal, status: 'جديد', customerName: name, phone: phone, deliveryType: deliveryMethod, deliveryDetails: extraDetails, paymentType: paymentMethod, orderDateKSA: ksaDateString, createdAt: serverTimestamp()
-          });
-          if (appliedCodeName) { const usageKey = `discount_usage_${appliedCodeName}`; const currentUsage = parseInt(localStorage.getItem(usageKey) || "0"); localStorage.setItem(usageKey, currentUsage + 1); }
+          const orderData = {
+              itemsString: itemsDetailsForDb, 
+              total: finalTotalVal.toFixed(1), 
+              status: 'جديد', 
+              customerName: name, 
+              phone: phone, 
+              deliveryType: deliveryMethod, 
+              deliveryDetails: extraDetails, 
+              paymentType: paymentMethod, 
+              orderDateKSA: ksaDateString, 
+              createdAt: serverTimestamp()
+          };
+          
+          // --- 🔥 تعديل هام: حفظ الإيميل والصورة 🔥 ---
+          if (currentUser) {
+              orderData.userId = currentUser.uid;
+              orderData.userEmail = currentUser.email;
+              orderData.userPhoto = currentUser.photoURL;
+          }
+
+          await addDoc(collection(db, 'orders'), orderData);
+          
+          // Record discount usage if applied
+          if (appliedCodeName && currentUser) { 
+              await addDoc(collection(db, 'discount_usage'), {
+                  userId: currentUser.uid,
+                  code: appliedCodeName,
+                  usedAt: serverTimestamp()
+              });
+          }
+
+          // Show Rating Modal after order
+          openRatingModal();
+
+          // مسح السلة بعد الطلب الناجح (اختياري، لكن أفضل للتجربة)
+          // cartItems = [];
+          // updateCartUI();
+
       } catch(e) { console.error("Error", e); }
+      
+      // فتح الواتساب
       window.open(`https://wa.me/966592372549?text=${encodeURIComponent(msg)}`, '_blank');
   });
 
@@ -738,6 +1458,80 @@
           });
       });
   });
+
+  // --- منطق تتبع الطلب ---
+  const trackModal = document.getElementById('trackModalOverlay');
+  const openTrackBtn = document.getElementById('openTrackModalBtn');
+  const closeTrackBtn = document.getElementById('closeTrackModal');
+  const searchOrderBtn = document.getElementById('searchOrderBtn');
+  const trackInput = document.getElementById('trackPhoneInput');
+  const trackResults = document.getElementById('trackResults');
+
+  if(openTrackBtn) {
+      openTrackBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          trackModal.style.display = 'flex';
+          mobileMenu.classList.remove('open');
+      });
+  }
+  if(closeTrackBtn) {
+      closeTrackBtn.addEventListener('click', () => { trackModal.style.display = 'none'; });
+  }
+  if(trackModal) {
+      trackModal.addEventListener('click', (e) => { if(e.target === trackModal) trackModal.style.display = 'none'; });
+  }
+
+  if(searchOrderBtn) {
+      searchOrderBtn.addEventListener('click', async () => {
+          const phone = trackInput.value.trim();
+          if(!phone) {
+              trackResults.innerHTML = '<p style="color:red;text-align:center;">الرجاء إدخال رقم الجوال</p>';
+              return;
+          }
+          
+          trackResults.innerHTML = '<p style="text-align:center;">جاري البحث...</p>';
+          searchOrderBtn.disabled = true;
+
+          try {
+              const q = query(collection(db, "orders"), where("phone", "==", phone));
+              const querySnapshot = await getDocs(q);
+              
+              if(querySnapshot.empty) {
+                  trackResults.innerHTML = '<p style="color:#666;text-align:center;">لا توجد طلبات مسجلة بهذا الرقم</p>';
+              } else {
+                  let ordersHTML = '';
+                  const orders = [];
+                  querySnapshot.forEach((doc) => { orders.push({id: doc.id, ...doc.data()}); });
+                  
+                  // ترتيب النتائج محلياً لأن الفايربيس يحتاج إندكس للترتيب مع الفلترة
+                  orders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+                  orders.forEach(order => {
+                      const statusClass = `status-${order.status.replace(/\s+/g, '-')}`;
+                      // تلخيص الأصناف
+                      const itemsSummary = order.itemsString.split('\n')[0] + (order.itemsString.split('\n').length > 1 ? ' ...' : '');
+                      
+                      ordersHTML += `
+                          <div class="order-status-card">
+                              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                                  <span style="font-weight:bold;">#${String(order.createdAt?.seconds || '').slice(-4)}</span>
+                                  <span style="font-size:12px; color:#888;">${order.orderDateKSA ? order.orderDateKSA.split(',')[0] : ''}</span>
+                              </div>
+                              <div class="status-badge ${statusClass}">${order.status}</div>
+                              <p style="font-size:13px; color:#555; margin-bottom:5px;">${itemsSummary}</p>
+                              <div style="font-weight:bold; font-size:14px; text-align:left;">${order.total} ر.س</div>
+                          </div>
+                      `;
+                  });
+                  trackResults.innerHTML = ordersHTML;
+              }
+          } catch(error) {
+              console.error("Track Error:", error);
+              trackResults.innerHTML = '<p style="color:red;text-align:center;">حدث خطأ أثناء البحث</p>';
+          }
+          searchOrderBtn.disabled = false;
+      });
+  }
 
   document.querySelector('.close-ad').addEventListener('click', () => { document.getElementById('ad-overlay').style.display = 'none'; });
   let lastScroll = 0;
