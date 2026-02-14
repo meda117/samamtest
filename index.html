@@ -6,6 +6,13 @@
   <title>مطعم صمّام</title>
   <link rel="stylesheet" href="style.css" />
   <style>
+      /* --- الأساسيات --- */
+      body { margin: 0; font-family: 'Cairo', sans-serif; background-color: #fcfcfc; color: #333; direction: rtl; }
+      * { box-sizing: border-box; }
+      a { text-decoration: none; color: inherit; }
+      ul { list-style: none; padding: 0; margin: 0; }
+      button { font-family: 'Cairo', sans-serif; }
+      
       /* --- كلاس الإخفاء --- */
       .hidden { display: none !important; }
 
@@ -15,7 +22,6 @@
           color: #92400e;
           font-weight: bold;
           padding: 12px 0;
-          display: none; /* يتم التحكم به من الإعدادات */
           position: fixed;
           top: 0;
           left: 0;
@@ -54,6 +60,62 @@
           z-index: 10;
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
       }
+
+      /* --- 🔥 بادج أقل كمية الجديد (تعديل المكان للمنتصف) 🔥 --- */
+      .min-qty-badge {
+          position: absolute;
+          top: 10px;
+          left: 50%;
+          transform: translateX(-50%); /* توسيط أفقي */
+          background-color: #1f2937; /* Dark Gray */
+          color: #fbbf24; /* Amber/Gold text */
+          padding: 3px 8px;
+          border-radius: 4px;
+          font-size: 10px;
+          font-weight: bold;
+          z-index: 9;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          border: 1px solid #fbbf24;
+          width: max-content;
+      }
+      
+      /* --- بادج وقت التحضير الجديد --- */
+      .prep-badge {
+          position: absolute;
+          top: 10px;
+          left: 10px; /* يسار الكارت عكس الخصم */
+          background-color: #dc2626; /* أحمر */
+          color: white;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 11px;
+          font-weight: bold;
+          z-index: 10;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+          display: flex;
+          align-items: center;
+          gap: 3px;
+      }
+
+      /* --- شارات الوجبة الجديدة --- */
+      .meal-badge {
+          background-color: #e65100;
+          color: white;
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-size: 11px;
+          margin-left: 5px;
+          display: inline-block;
+      }
+      .rice-status-badge {
+          background-color: #15803d; /* أخضر */
+          color: white;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-size: 10px;
+          display: inline-block;
+      }
+      
       .old-price {
           text-decoration: line-through;
           color: #9ca3af;
@@ -73,6 +135,19 @@
       .custom-select:focus { outline: none; border-color: #e65100; }
       
       button.add-to-cart:disabled { background-color: #ccc !important; cursor: not-allowed; opacity: 0.6; }
+
+      /* --- رابط التفاصيل الجديد --- */
+      .details-link {
+          display: block;
+          text-align: center;
+          color: #e65100;
+          font-size: 13px;
+          font-weight: bold;
+          margin: 10px 0;
+          cursor: pointer;
+          text-decoration: underline;
+      }
+      .details-link:hover { color: #bf360c; }
       
       /* --- تنسيقات حقول السلة الجديدة --- */
       .cart-input {
@@ -91,13 +166,13 @@
       img[src=""] { display: none; }
 
       /* --- تنسيقات النوافذ المنبثقة (Modal) --- */
-      .track-modal-overlay, .profile-modal-overlay, .rating-modal-overlay {
+      .track-modal-overlay, .profile-modal-overlay, .rating-modal-overlay, .meal-modal-overlay, .login-modal-overlay {
           position: fixed; top: 0; left: 0; width: 100%; height: 100%;
           background: rgba(0,0,0,0.5); z-index: 3000;
           display: none; align-items: center; justify-content: center;
           backdrop-filter: blur(5px);
       }
-      .track-modal, .profile-modal, .rating-modal {
+      .track-modal, .profile-modal, .rating-modal, .meal-modal, .login-modal {
           background: white; width: 90%; max-width: 450px;
           border-radius: 20px; padding: 25px;
           box-shadow: 0 20px 50px rgba(0,0,0,0.3);
@@ -106,15 +181,120 @@
           border: 1px solid rgba(255,255,255,0.8);
           text-align: center;
       }
-      .track-modal h3, .profile-modal h3, .rating-modal h3 { 
+
+      /* --- 🔥 تنسيقات شيك جداً لنافذة تفاصيل الوجبة 🔥 --- */
+      .meal-modal { padding: 0; overflow: hidden; border: none; }
+      
+      .meal-modal-img-container {
+          width: 100%;
+          height: 280px;
+          overflow: hidden;
+          position: relative;
+      }
+      .meal-modal img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+      }
+      
+      /* طبقة ظل خفيفة على الصورة ليظهر زر الإغلاق */
+      .meal-modal-img-container::after {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          height: 60px;
+          background: linear-gradient(to bottom, rgba(0,0,0,0.4), transparent);
+      }
+
+      .meal-modal-body { 
+          padding: 20px 25px 25px 25px; 
+          text-align: right; 
+      }
+      
+      .meal-ramadan-tag {
+          background: #d21d40;
+          color: white;
+          padding: 4px 12px;
+          border-radius: 50px;
+          font-size: 13px;
+          font-weight: 800;
+          display: inline-block;
+          margin-bottom: 10px;
+      }
+      
+      .meal-modal-title {
+          margin: 0 0 20px 0;
+          font-size: 26px;
+          font-weight: 900;
+          color: #000; /* أسود صريح */
+      }
+      
+      .meal-ingredients-title {
+          font-weight: 900;
+          color: #000; /* أسود صريح */
+          margin-bottom: 15px;
+          font-size: 18px;
+          border-bottom: 2px solid #eee;
+          padding-bottom: 8px;
+      }
+      
+      .meal-ingredients-list {
+          color: #000; /* أسود صريح */
+          font-size: 16px;
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+      }
+      .meal-ingredients-list li {
+          background: #f9f9f9;
+          padding: 12px 15px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-weight: 700; /* خط سميك */
+          border: 1px solid #f0f0f0;
+      }
+      .meal-ingredients-list li::before { 
+          content: '✔'; 
+          color: #15803d; 
+          font-weight: 900;
+      }
+
+      .meal-modal-footer-price {
+          background: #f1f1f1;
+          padding: 20px 25px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-top: 1px solid #ddd;
+      }
+      .meal-price-label { 
+          font-size: 18px; 
+          color: #000; 
+          font-weight: 900; 
+      }
+      .meal-price-value {
+          font-size: 28px;
+          font-weight: 900;
+          color: #000; /* سعر أسود وواضح */
+      }
+      .meal-price-value span { font-size: 16px; margin-right: 4px; }
+
+      .track-modal h3, .profile-modal h3, .rating-modal h3, .login-modal h3 { 
           margin-top: 0; color: #333; text-align: center; margin-bottom: 20px; 
           font-family: 'Cairo', sans-serif; font-weight: 700;
       }
       .track-close {
           position: absolute; top: 15px; left: 15px;
           font-size: 24px; cursor: pointer; color: #999; transition: 0.3s;
+          z-index: 100;
       }
       .track-close:hover { color: #d84315; }
+      .track-close.light { color: white; text-shadow: 0 0 5px rgba(0,0,0,0.5); }
 
       .order-status-card {
           border: 1px solid #f0f0f0; border-radius: 12px; padding: 15px; margin-bottom: 12px;
@@ -292,7 +472,6 @@
       }
       .user-dropdown-item:hover { background: #fff8e1; color: #e65100; }
       .user-dropdown-item:last-child { border-bottom: none; color: #d32f2f; }
-      /* لا نريد أن يكون زر جوجل أو الزائر أحمر */
       .user-dropdown-item.logout-item { color: #d32f2f; }
       .user-dropdown-item.logout-item:hover { background: #ffebee; color: #b71c1c; }
 
@@ -332,16 +511,171 @@
               width: 180px;
               left: 5px;
           }
+          /* تعديل المودال للموبايل */
+          .meal-ingredients-list { grid-template-columns: 1fr; }
       }
+
+      /* ========================================= */
+      /* 🔥 تنسيقات خاصة لزر وجبات رمضان الجديد 🔥 */
+      /* ========================================= */
+      .category-btn.ramadan-special {
+          background: linear-gradient(135deg, #b91c3a 0%, #7f1d1d 100%); /* تدرج أحمر غامق فخم */
+          color: #fff;
+          border: 1px solid #ffd700; /* إطار ذهبي */
+          font-weight: 800;
+          box-shadow: 0 4px 15px rgba(210, 29, 64, 0.4); /* ظل أحمر */
+          position: relative;
+          overflow: hidden;
+          transition: all 0.3s ease;
+          animation: pulse-ramadan 2s infinite ease-in-out; /* أنيميشن التكبير والتصغير */
+          margin-right: 5px; /* مسافة صغيرة عن الزر اللي قبله */
+      }
+
+      .category-btn.ramadan-special:hover,
+      .category-btn.ramadan-special.active {
+          background: linear-gradient(135deg, #ffd700 0%, #facc15 100%); /* ذهبي عند التفعيل */
+          color: #7f1d1d; /* نص أحمر غامق */
+          border-color: #b91c3a;
+          transform: scale(1.05); /* تكبير بسيط عند الضغط */
+          animation: none; /* إيقاف النبض عند التفعيل */
+      }
+
+      /* تعريف الأنيميشن (التكبير والتصغير) */
+      @keyframes pulse-ramadan {
+          0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
+          50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
+          100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+      }
+
+      /* --- Custom Notification System --- */
+      #notification-container {
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          width: 90%;
+          max-width: 400px;
+          pointer-events: none; /* Allows clicking through the container area */
+      }
+
+      .custom-toast {
+          background: white;
+          padding: 15px 20px;
+          border-radius: 12px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          animation: slideDownFade 0.4s ease-out forwards;
+          pointer-events: auto; /* Re-enable clicks on the toast itself */
+          border-right: 5px solid #ccc; /* Default border */
+          direction: rtl;
+          text-align: right;
+      }
+
+      .custom-toast.success { border-right-color: #22c55e; }
+      .custom-toast.error { border-right-color: #ef4444; }
+      .custom-toast.warning { border-right-color: #f59e0b; }
+
+      .custom-toast-icon { font-size: 20px; }
+      .custom-toast-msg { font-size: 14px; font-weight: bold; color: #333; }
+
+      @keyframes slideDownFade {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes fadeOut {
+          to { opacity: 0; transform: translateY(-20px); }
+      }
+
+      /* --- Login Modal Styles --- */
+      .login-modal-overlay {
+          /* Inherits from .track-modal-overlay */
+      }
+      
+      .login-options {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin-top: 20px;
+      }
+      
+      .google-login-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          background: white;
+          border: 1px solid #ddd;
+          padding: 12px;
+          border-radius: 30px;
+          font-weight: bold;
+          color: #555;
+          cursor: pointer;
+          transition: 0.2s;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      }
+      
+      .google-login-btn:hover {
+          background: #f8f8f8;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      }
+      
+      .visitor-login-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          background: #f3f4f6;
+          border: 1px solid transparent;
+          padding: 12px;
+          border-radius: 30px;
+          font-weight: bold;
+          color: #4b5563;
+          cursor: pointer;
+          transition: 0.2s;
+      }
+      
+      .visitor-login-btn:hover {
+          background: #e5e7eb;
+          color: #1f2937;
+      }
+
   </style>
 </head>
 <body>
 
 <!-- شريط الإعلانات -->
-<div id="announcement-bar">
+<div id="announcement-bar" style="display: none;">
     <div class="marquee-container">
         <div class="marquee" id="announcement-text">مرحباً بكم في مطعم صمّام</div>
     </div>
+</div>
+
+<!-- Notification Container -->
+<div id="notification-container"></div>
+
+<!-- Login Modal -->
+<div class="login-modal-overlay" id="loginModalOverlay">
+  <div class="login-modal">
+     <span class="track-close" id="closeLoginModal">&times;</span>
+     <h3 style="margin-bottom: 5px;">مرحباً بك! 👋</h3>
+     <p style="color: #666; font-size: 14px;">لإتمام طلبك، يرجى اختيار طريقة للمتابعة</p>
+     <div class="login-options">
+        <button id="modalLoginGoogleBtn" class="google-login-btn">
+           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google">
+           تسجيل الدخول بجوجل
+        </button>
+        <button id="modalLoginVisitorBtn" class="visitor-login-btn">
+           👤 متابعة كزائر
+        </button>
+     </div>
+  </div>
 </div>
 
 <div class="header-bg" id="headerBg"></div>
@@ -441,7 +775,7 @@
 <section id="menu" class="menu-section">
   <h2 class="section-title">قائمة الطعام</h2>
 
-  <!-- أزرار الأقسام -->
+  <!-- أزرار الأقسام - تم تعديل الترتيب وإضافة كلاس مميز لرمضان -->
   <div class="category-buttons">
     <button class="category-btn active" data-category="all">عرض الكل</button>
     <button class="category-btn" data-category="chicken">دجاج</button>
@@ -449,6 +783,8 @@
     <button class="category-btn" data-category="rice">رز</button>
     <button class="category-btn" data-category="sides">طلبات جانبية</button>
     <button class="category-btn" data-category="drinks">المشروبات</button>
+    <!-- قسم وجبات رمضان أصبح في النهاية مع كلاس مميز -->
+    <button class="category-btn ramadan-special" data-category="ramadan">🌙 وجبات رمضان</button>
   </div>
 
   <!-- حاويات الأقسام -->
@@ -458,6 +794,9 @@
     <div id="rice" class="menu-group"></div>
     <div id="sides" class="menu-group"></div>
     <div id="drinks" class="menu-group"></div>
+    
+    <!-- تم نقل حاوية رمضان لتكون في النهاية -->
+    <div id="ramadan" class="menu-group"></div> 
     
     <div id="loading-msg" style="text-align: center; width: 100%; padding: 40px; color: #666; font-size: 1.2em;">
       <span style="display:inline-block; animation: spin 1s linear infinite">⏳</span> جاري تحميل القائمة...
@@ -511,7 +850,7 @@
   </div>
 
   <div class="cartSlider-discount">
-    <label>كود الخصم (يتطلب تسجيل دخول):</label>
+    <label>كود الخصم (يتطلب تسجيل دخول بجوجل):</label>
     <div style="display:flex; gap:5px;">
         <input type="text" id="discountCode_v2" placeholder="ادخل الكود" style="flex:1;">
         <button id="applyDiscountBtn_v2">تطبيق</button>
@@ -521,7 +860,8 @@
 
   <div class="cartSlider-total" id="cartTotal_v2">المجموع: 0 ريال</div>
 
-  <button class="cartSlider-send" id="sendOrder_v2">إرسال الطلب عبر واتساب</button>
+  <!-- تم إضافة type="button" لمنع إعادة تحميل الصفحة -->
+  <button type="button" class="cartSlider-send" id="sendOrder_v2">إرسال الطلب</button>
 </div>
 
 <!-- نافذة تتبع الطلب (Modal) -->
@@ -555,6 +895,38 @@
         <h4 style="margin-bottom:15px; color:#e65100;">سجل طلباتي السابقة</h4>
         <div id="userOrdersList">
             <!-- قائمة الطلبات -->
+        </div>
+    </div>
+</div>
+
+<!-- نافذة تفاصيل الوجبة (Meal Details Modal) - مُحدثة بطلبك 🔥 -->
+<div class="meal-modal-overlay" id="mealModalOverlay">
+    <div class="meal-modal">
+        <!-- زر الإغلاق فوق الصورة -->
+        <span class="track-close light" id="closeMealModal">&times;</span>
+        
+        <!-- الصورة بعرض النافذة -->
+        <div class="meal-modal-img-container">
+            <img id="mealModalImg" src="" alt="صورة الوجبة" />
+        </div>
+
+        <!-- محتوى النافذة -->
+        <div class="meal-modal-body">
+            <span class="meal-ramadan-tag">وجبات رمضان</span>
+            <h3 id="mealModalTitle" class="meal-modal-title">اسم الوجبة</h3>
+
+            <div id="mealIngredientsContainer">
+                <p class="meal-ingredients-title">تتكون الوجبة من:</p>
+                <ul id="mealIngredientsList" class="meal-ingredients-list">
+                    <!-- قائمة المكونات ستظهر هنا -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- فوتر السعر -->
+        <div class="meal-modal-footer-price">
+            <span class="meal-price-label">السعر النهائي</span>
+            <div class="meal-price-value"><span id="mealModalPrice">0.0</span> <span>ر.س</span></div>
         </div>
     </div>
 </div>
@@ -623,7 +995,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { getFirestore, collection, getDocs, doc, getDoc, addDoc, serverTimestamp, query, where, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, doc, getDoc, addDoc, serverTimestamp, query, where, setDoc, updateDoc, increment, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0bLzrTbWlgiSyIo9YUsJIp07L_bCclfg",
@@ -640,15 +1012,25 @@
   const db = getFirestore(app);
   const provider = new GoogleAuthProvider();
 
+  enableIndexedDbPersistence(db)
+    .catch((err) => {
+        if (err.code == 'failed-precondition') {
+            console.log('Multiple tabs open, persistence can only be enabled in one tab at a a time.');
+        } else if (err.code == 'unimplemented') {
+            console.log('The current browser does not support all of the features required to enable persistence');
+        }
+    });
+
+  setPersistence(auth, browserLocalPersistence).catch(console.error);
+
   let currentUser = null;
   let cartItems = [];
   const deliveryFee = 15;
   let appliedDiscount = 0;
   let appliedCodeName = "";
   
-  const categoryMap = {'دجاج':'chicken','لحم':'meat','رز':'rice','طلبات جانبية':'sides','المشروبات':'drinks'};
+  const categoryMap = {'وجبات رمضان': 'ramadan', 'دجاج':'chicken','لحم':'meat','رز':'rice','طلبات جانبية':'sides','المشروبات':'drinks'};
 
-  // --- استرجاع السلة من الذاكرة (Persistence) ---
   const savedCart = localStorage.getItem('samam_cart');
   if (savedCart) {
       try {
@@ -658,20 +1040,43 @@
       }
   }
 
-  // --- إدارة زر المستخدم في الهيدر ---
+  // --- 🔥 Custom Notification System 🔥 ---
+  window.showNotification = function(message, type = 'info') {
+      const container = document.getElementById('notification-container');
+      const toast = document.createElement('div');
+      toast.className = `custom-toast ${type}`;
+      
+      let icon = 'ℹ️';
+      if(type === 'success') icon = '✅';
+      if(type === 'error') icon = '❌';
+      if(type === 'warning') icon = '⚠️';
+
+      toast.innerHTML = `
+          <span class="custom-toast-icon">${icon}</span>
+          <span class="custom-toast-msg">${message}</span>
+      `;
+
+      container.appendChild(toast);
+
+      // Remove after 3.5 seconds
+      setTimeout(() => {
+          toast.style.animation = 'fadeOut 0.4s ease-in forwards';
+          toast.addEventListener('animationend', () => {
+              toast.remove();
+          });
+      }, 3500);
+  }
+
   const headerUserBtn = document.getElementById('headerUserBtn');
   const userDropdown = document.getElementById('userDropdown');
   const headerLogoutBtn = document.getElementById('headerLogoutBtn');
   const openProfileBtn = document.getElementById('openProfileBtn');
   const openTrackBtnMobile = document.getElementById('openTrackModalBtnMobile');
 
-  // تعديل: دالة لربط الأحداث بالعناصر التي يتم إنشاؤها ديناميكياً
   function attachDropdownListeners() {
-      // عناصر قائمة الدخول (زائر أو جوجل)
       const loginVisitorBtn = document.getElementById('loginVisitorBtn');
       const loginGoogleBtn = document.getElementById('loginGoogleBtn');
       
-      // عناصر قائمة المستخدم (الملف الشخصي والخروج)
       const profileBtn = document.getElementById('openProfileBtn');
       const logoutBtn = document.getElementById('headerLogoutBtn');
 
@@ -689,23 +1094,19 @@
       if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
   }
 
-  // تعديل: زر الدخول دائماً يفتح القائمة (Dropdown)
   if (headerUserBtn) {
       headerUserBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          // في كل الحالات (مسجل أو زائر) نفتح القائمة، ومحتواها يختلف
           userDropdown.classList.toggle('show');
       });
   }
 
-  // إغلاق القائمة عند النقر خارجها
   document.addEventListener('click', (e) => {
       if (userDropdown && userDropdown.classList.contains('show') && !headerUserBtn.contains(e.target)) {
           userDropdown.classList.remove('show');
       }
   });
 
-  // --- دالة تسجيل الدخول بجوجل ---
   async function handleGoogleLogin() {
       console.log("Starting Google Login...");
       try {
@@ -714,11 +1115,10 @@
           console.log("Google Login Success");
       } catch (error) {
           console.error("Google Login Failed:", error);
-          alert(`عذراً، حدث خطأ أثناء تسجيل الدخول.`);
+          showNotification('عذراً، حدث خطأ أثناء تسجيل الدخول: ' + error.message, 'error');
       }
   }
 
-  // --- دالة تسجيل الدخول كزائر ---
   async function handleVisitorLogin() {
       console.log("Starting Anonymous Login...");
       try {
@@ -727,25 +1127,29 @@
           console.log("Anonymous Login Success");
       } catch (error) {
           console.error("Anonymous Login Failed:", error);
-          alert(`عذراً، حدث خطأ أثناء تسجيل الدخول كزائر.`);
+          showNotification('عذراً، حدث خطأ أثناء تسجيل الدخول كزائر: ' + error.message, 'error');
       }
   }
 
-  // --- دالة تسجيل الخروج ---
   function handleLogout() {
       signOut(auth).then(() => {
-          alert("تم تسجيل الخروج بنجاح");
-          location.reload();
+          showNotification("تم تسجيل الخروج بنجاح", 'success');
+          setTimeout(() => location.reload(), 1500);
       }).catch((error) => {
           console.error(error);
-          alert("حدث خطأ أثناء تسجيل الخروج");
+          showNotification("حدث خطأ أثناء تسجيل الخروج", 'error');
       });
   }
 
-  // --- مراقبة حالة المستخدم ---
   onAuthStateChanged(auth, (user) => {
       currentUser = user;
       updateUserUI(user);
+      
+      // Close login modal if user logs in
+      if (user) {
+          const loginModal = document.getElementById('loginModalOverlay');
+          if (loginModal) loginModal.style.display = 'none';
+      }
   });
 
   function updateUserUI(user) {
@@ -754,45 +1158,36 @@
       if (!headerBtn || !dropdown) return;
 
       if (user) {
-          // --- حالة تسجيل الدخول ---
           headerBtn.classList.remove('visitor-mode');
           headerBtn.classList.add('logged-in-style');
 
-          // استخدام صورة جوجل إذا وجدت، أو صورة افتراضية للزائر
-          // fallback icon for anonymous users or missing photos
           const avatarUrl = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; 
           
           headerBtn.innerHTML = `
               <img src="${avatarUrl}" class="header-user-avatar" alt="User">
           `;
 
-          // محتوى القائمة للمستخدم المسجل
           dropdown.innerHTML = `
               <div class="user-dropdown-item" id="openProfileBtn">📂 طلباتي السابقة</div>
               <div class="user-dropdown-item logout-item" id="headerLogoutBtn">🚪 تسجيل خروج</div>
           `;
       } else {
-          // --- حالة الزائر (غير مسجل) ---
           headerBtn.classList.remove('logged-in-style');
           headerBtn.classList.add('visitor-mode'); 
           headerBtn.innerHTML = `
               <span class="header-user-icon">👤</span>
-              <!-- النص مخفي بـ CSS -->
               <span>دخول</span>
           `;
           
-          // محتوى القائمة للزائر (خيارات الدخول)
           dropdown.innerHTML = `
               <div class="user-dropdown-item" id="loginVisitorBtn" style="font-weight:bold;">🕶️ متابعة كزائر</div>
               <div class="user-dropdown-item" id="loginGoogleBtn" style="font-weight:bold;">🇬 دخول بجوجل</div>
           `;
       }
       
-      // ربط الأحداث بالعناصر الجديدة في القائمة
       attachDropdownListeners();
   }
 
-  // --- منطق الملف الشخصي (Profile & History) ---
   const profileModal = document.getElementById('profileModalOverlay');
   const closeProfileBtn = document.getElementById('closeProfileModal');
   
@@ -803,7 +1198,6 @@
       const content = document.getElementById('profileContent');
       const ordersList = document.getElementById('userOrdersList');
       
-      // التعامل مع صورة الزائر (Anonymous)
       const avatarUrl = currentUser.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
       const displayName = currentUser.displayName || (currentUser.isAnonymous ? 'زائر' : 'عميلنا');
       const displayEmail = currentUser.email || 'حساب زائر (مؤقت)';
@@ -829,7 +1223,6 @@
               const orders = [];
               querySnapshot.forEach((doc) => { orders.push({id: doc.id, ...doc.data()}); });
               
-              // ترتيب تنازلي (الأحدث أولاً)
               orders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
               orders.forEach(order => {
@@ -857,7 +1250,6 @@
       }
   }
 
-  // --- منطق التقييم (Rating Logic) ---
   const ratingModal = document.getElementById('ratingModalOverlay');
   const closeRatingBtn = document.getElementById('closeRatingModal');
   const submitRatingBtn = document.getElementById('submitRatingBtn');
@@ -866,7 +1258,6 @@
   const googleMapLinkContainer = document.getElementById('googleMapLinkContainer');
 
   function openRatingModal() {
-      // Reset form
       ratingStars.forEach(s => s.checked = false);
       ratingComment.value = "";
       googleMapLinkContainer.style.display = 'none';
@@ -882,33 +1273,44 @@
           ratingStars.forEach(s => { if(s.checked) selectedRating = s.value; });
           
           if (selectedRating === 0) {
-              alert("الرجاء اختيار عدد النجوم");
+              showNotification("الرجاء اختيار عدد النجوم", 'warning');
               return;
           }
 
           const comment = ratingComment.value.trim();
+          
+          // Get details from inputs if available (for visitors)
+          const nameInput = document.getElementById('customerName').value.trim();
+          const phoneInput = document.getElementById('customerPhone').value.trim();
+          
+          let rName = 'زائر';
+          if (currentUser && !currentUser.isAnonymous && currentUser.displayName) {
+              rName = currentUser.displayName;
+          } else if (nameInput) {
+              rName = nameInput;
+          }
+
           submitRatingBtn.innerText = "جاري الإرسال...";
           submitRatingBtn.disabled = true;
 
           try {
-              // --- 🔥 تعديل: إضافة البريد والصورة في التقييم 🔥 ---
               await addDoc(collection(db, 'ratings'), {
                   rating: parseInt(selectedRating),
                   comment: comment,
-                  customerName: currentUser ? currentUser.displayName : 'زائر',
+                  customerName: rName,
+                  phone: phoneInput, // Add phone number
                   customerId: currentUser ? currentUser.uid : null,
-                  customerEmail: currentUser ? currentUser.email : null, // إضافة الإيميل
-                  customerPhoto: currentUser ? currentUser.photoURL : null, // إضافة الصورة
+                  customerEmail: currentUser ? currentUser.email : null, 
+                  customerPhoto: currentUser ? currentUser.photoURL : null, 
                   createdAt: serverTimestamp()
               });
 
-              // Show success UI inside modal
               submitRatingBtn.style.display = 'none';
               googleMapLinkContainer.style.display = 'block';
               
           } catch (e) {
               console.error(e);
-              alert("حدث خطأ أثناء إرسال التقييم");
+              showNotification("حدث خطأ أثناء إرسال التقييم", 'error');
               submitRatingBtn.innerText = "إرسال التقييم";
               submitRatingBtn.disabled = false;
           }
@@ -934,8 +1336,25 @@
 
   async function loadData() {
     trackVisit();
-    updateCartUI(); // تحديث السلة عند بدء التحميل من الذاكرة
+    updateCartUI(); 
     const loadingMsg = document.getElementById('loading-msg');
+    
+    try {
+        const savedCustomerData = localStorage.getItem('samam_customer_data');
+        if(savedCustomerData) {
+            const data = JSON.parse(savedCustomerData);
+            Object.keys(data).forEach(key => {
+                const el = document.getElementById(key);
+                if(el) {
+                    el.value = data[key];
+                    if (key === 'deliveryMethod_v2') {
+                        el.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+        }
+    } catch(e) { console.error("Error loading customer data", e); }
+
     try {
       const settingsDoc = await getDoc(doc(db, 'settings', 'general'));
       if (settingsDoc.exists()) {
@@ -949,6 +1368,9 @@
               if (settings.announcementBgColor) announcementBar.style.backgroundColor = settings.announcementBgColor;
               if (settings.announcementTextColor) announcementBar.style.color = settings.announcementTextColor;
               document.body.style.paddingTop = announcementBar.offsetHeight + 'px';
+          } else {
+              announcementBar.style.display = 'none';
+              document.body.style.paddingTop = '0px';
           }
           const adOverlay = document.getElementById('ad-overlay');
           const popupImg = document.getElementById('popup-ad-img');
@@ -981,19 +1403,56 @@
             const container = document.getElementById(containerId);
             
             if (container) {
+              const isMeal = item.isMeal === true || catKey === 'وجبات رمضان' || item.type === 'meal';
+
               let sizesHTML = '';
               let basePrice = item.price || 0;
               
-              if (item.hasSizes && item.sizes && Array.isArray(item.sizes) && item.sizes.length > 0) {
+              if (!isMeal && item.hasSizes && item.sizes && Array.isArray(item.sizes) && item.sizes.length > 0) {
                   basePrice = 0; 
                   sizesHTML = `<div class="menu-item-size">${item.sizes.map((s, index) => `<button class="size-btn" data-index="${index}" onclick="selectSize(this)">${s.name}</button>`).join('')}</div>`;
               }
+              
+              // ============================================
+              // 🔥 منطق خاص لوجبات رمضان (مظبي / مضغوط) 🔥
+              // ============================================
+              let ramadanVariantHTML = '';
+              
+              // الأولوية لبيانات الأنواع (variants) إذا كانت موجودة (من لوحة التحكم الجديدة)
+              // وإلا نستخدم sizes كخطة بديلة (للتوافق القديم)
+              let variantsData = (item.variants && item.variants.length > 0) ? item.variants : (item.sizes || []);
+              
+              if ((catKey === 'ramadan' || catKey === 'وجبات رمضان') && variantsData.length > 0) {
+                  // في رمضان، نلغي أزرار الأحجام العادية ونستخدم Select
+                  sizesHTML = ''; 
+                  
+                  // إنشاء قائمة منسدلة تحتوي على الخيارات (مظبي / مضغوط)
+                  ramadanVariantHTML = `
+                  <div class="menu-item-type">
+                      <label>اختر الصنف:</label>
+                      <select class="custom-select ramadan-variant-select" onchange="handleRamadanVariantChange(this)">
+                          <option value="" data-price="${item.price}" data-img="${item.image}" selected disabled>اختر (مضغوط / مظبي)</option>
+                          ${variantsData.map((s, i) => `
+                              <option value="${s.name}" 
+                                      data-index="${i}" 
+                                      data-price="${s.price || item.price}" 
+                                      data-img="${s.image || ''}"
+                                      data-details="${encodeURIComponent(s.details || '')}">
+                                  ${s.name}
+                              </option>
+                          `).join('')}
+                      </select>
+                  </div>
+                  `;
+              }
+
               let typeHTML = '';
-              if (item.hasPlainOption) {
+              if (!isMeal && item.hasPlainOption) {
                   typeHTML = `<div class="menu-item-type"><label>نوع الطلب:</label><select class="type-select custom-select" onchange="handleTypeChange(this)"><option value="" disabled selected hidden>اختر (سادة / مع الرز)</option><option value="plain">سادة</option><option value="with_rice">مع الرز</option></select></div>`;
               }
+
               let riceHTML = '';
-              if (item.hasRiceSelection && item.riceTypes && Array.isArray(item.riceTypes) && item.riceTypes.length > 0) {
+              if (!isMeal && item.hasRiceSelection && item.riceTypes && Array.isArray(item.riceTypes) && item.riceTypes.length > 0) {
                   riceHTML = `<div class="menu-item-rice" style="${item.hasPlainOption ? 'display:none;' : ''}"><label>نوع الرز:</label><select class="rice-select custom-select" onchange="calculateCardPrice(this)"><option value="" disabled selected hidden>برجاء تحديد نوع الرز</option>${item.riceTypes.map(r => { const rName = typeof r === 'object' ? r.name : r; const rPrice = typeof r === 'object' ? (r.price || 0) : 0; const label = rPrice > 0 ? `${rName} (+${rPrice} ر.س)` : rName; return `<option value="${rName}" data-extra="${rPrice}">${label}</option>`; }).join('')}</select></div>`;
               }
               
@@ -1004,13 +1463,79 @@
               
               const discountVal = parseInt(item.discount) || 0;
               const discountBadge = (discountVal > 0) ? `<div class="discount-badge">خصم ${discountVal}%</div>` : '';
+              
+              let prepBadge = '';
+              if (item.prepTimeValue) {
+                  const pType = item.prepTimeType === 'على الطلب' ? 'على الطلب' : 'وقت التحضير';
+                  prepBadge = `<div class="prep-badge"><span style="font-size:12px">⏱</span> ${pType} ${item.prepTimeValue} دقيقة</div>`;
+              }
+
+              let mealBadges = '';
+              if (isMeal) {
+                  mealBadges += `<span class="meal-badge">وجبة</span>`;
+                  if (item.hasRice !== undefined) {
+                      mealBadges += `<span class="rice-status-badge">${item.hasRice ? 'مع رز' : 'بدون رز'}</span>`;
+                  } else if (item.riceOption) {
+                      mealBadges += `<span class="rice-status-badge">${item.riceOption}</span>`;
+                  } else {
+                       mealBadges += `<span class="rice-status-badge">مع الرز</span>`;
+                  }
+              }
+
+              let detailsLink = '';
+              if (isMeal) {
+                  detailsLink = `<a class="details-link" onclick="openMealModal(this)">عرض المكونات والتفاصيل</a>`;
+              }
+
+              let comps = [];
+              if (item.components) {
+                  comps = item.components.split(/[\n،,]+/).map(s => s.trim()).filter(s => s);
+              } else if (item.ingredients && Array.isArray(item.ingredients)) {
+                  comps = item.ingredients;
+              }
+              const ingredientsSafe = comps.length > 0 ? encodeURIComponent(JSON.stringify(comps)) : '';
+              
+              // 🔥 منطق البادج الجديد (أقل كمية) 🔥
+              const isRamadan = catKey === 'ramadan' || catKey === 'وجبات رمضان';
+              let minQtyBadge = '';
+              if (isRamadan) {
+                  // البادج الجديد في منتصف الكارت من الأعلى
+                  minQtyBadge = `<div class="min-qty-badge">أقل كمية 10 وجبات</div>`;
+              }
 
               const cardHTML = `
-                <div class="menu-item-card" data-id="${item.id}" data-base-price="${item.price || 0}" data-has-plain="${item.hasPlainOption || false}" data-sizes="${sizesDataSafe}" data-discount="${discountVal}">
+                <div class="menu-item-card" 
+                      data-id="${item.id}" 
+                      data-category="${catKey}" 
+                      data-base-price="${item.price || 0}" 
+                      data-has-plain="${item.hasPlainOption || false}" 
+                      data-sizes="${sizesDataSafe}" 
+                      data-discount="${discountVal}"
+                      data-is-meal="${isMeal}"
+                      data-img="${item.image || ''}"
+                      data-base-img-fallback="${item.image || ''}"
+                      data-title="${item.name}"
+                      data-ingredients="${ingredientsSafe}"
+                      data-is-without-additions="${item.isWithoutAdditions || false}"> <!-- Added Attribute -->
                   ${discountBadge}
-                  <div class="menu-item-img">${item.image ? `<img src="${item.image}" alt="${item.name}" onerror="this.src='images/logo p.png'">` : ''}<span class="calories">${item.calories || ''}</span></div>
-                  <h3 class="menu-item-title">${item.name}</h3>
-                  ${sizesHTML}${typeHTML}${riceHTML}
+                  ${minQtyBadge} <!-- 🔥 البادج الجديد -->
+                  ${prepBadge}
+                  <div class="menu-item-img">
+                      ${item.image ? `<img src="${item.image}" alt="${item.name}" onerror="this.src='images/logo p.png'">` : ''}
+                      <span class="calories">${item.calories || ''}</span>
+                      
+                      <!-- New Badge Logic (Without Additions) -->
+                      ${item.isWithoutAdditions ? '<div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(55,65,81,0.9); color:white; font-size:11px; text-align:center; padding:4px 0; font-weight:bold;">بدون إضافات</div>' : ''}
+                  </div>
+                  <h3 class="menu-item-title">
+                    ${item.name} 
+                    ${mealBadges}
+                  </h3>
+                  
+                  ${detailsLink}
+
+                  ${sizesHTML}${ramadanVariantHTML}${typeHTML}${riceHTML}
+                  
                   <div class="menu-item-quantity"><label>الكمية:</label><div class="quantity-box"><button type="button" class="qty-btn minus" onclick="updateCardQty(this, -1)">−</button><span class="quantity-input">1</span><button type="button" class="qty-btn plus" onclick="updateCardQty(this, 1)">+</button></div></div>
                   <div class="menu-item-price"><p class="new-price">السعر : <span class="price price-display">${basePrice > 0 ? basePrice : '0'}</span> ر.س</p></div>
                   <button class="add-to-cart" disabled onclick="addToCart(this)">إضافة إلى سلة مشترياتك</button>
@@ -1026,6 +1551,53 @@
         if (loadingMsg) loadingMsg.innerText = "فشل تحميل القائمة. تأكد من إعدادات قاعدة البيانات.";
     }
   }
+
+  // --- 🔥 منطق نافذة تفاصيل الوجبة (Meal Modal Logic) - مُحدث لطلبك 🔥 ---
+  const mealModal = document.getElementById('mealModalOverlay');
+  const closeMealBtn = document.getElementById('closeMealModal');
+  
+  window.openMealModal = function(btn) {
+      const card = btn.closest('.menu-item-card');
+      if (!card) return;
+
+      const title = card.dataset.title;
+      // نستخدم الصورة الحالية الظاهرة في الكارت (لأنها قد تكون تغيرت حسب الاختيار)
+      const currentImgSrc = card.querySelector('.menu-item-img img').src;
+      const price = card.querySelector('.price-display').innerText.split(' ')[0]; // نأخذ السعر الحالي المعروض
+
+      let ingredients = [];
+      try {
+          if (card.dataset.ingredients) {
+              ingredients = JSON.parse(decodeURIComponent(card.dataset.ingredients));
+          }
+      } catch(e) {}
+
+      // تحديث البيانات في النافذة
+      document.getElementById('mealModalTitle').innerText = title;
+      document.getElementById('mealModalImg').src = currentImgSrc || 'images/logo p.png';
+      document.getElementById('mealModalPrice').innerText = parseFloat(price).toFixed(1);
+      
+      const ingList = document.getElementById('mealIngredientsList');
+      const ingContainer = document.getElementById('mealIngredientsContainer');
+      ingList.innerHTML = '';
+      
+      if (ingredients && ingredients.length > 0) {
+          ingredients.forEach(ing => {
+              const li = document.createElement('li');
+              li.innerText = ing;
+              ingList.appendChild(li);
+          });
+          ingContainer.style.display = 'block';
+      } else {
+          ingContainer.style.display = 'none';
+      }
+
+      mealModal.style.display = 'flex';
+  };
+
+  if (closeMealBtn) closeMealBtn.addEventListener('click', () => { mealModal.style.display = 'none'; });
+  if (mealModal) mealModal.addEventListener('click', (e) => { if(e.target === mealModal) mealModal.style.display = 'none'; });
+
 
   const menuToggle = document.getElementById('menuToggle');
   const mobileMenu = document.getElementById('mobileMenu');
@@ -1057,6 +1629,40 @@
       });
   }
 
+  // --- 🔥 دالة تغيير الصورة بناء على اختيار الصنف (رمضان) 🔥 ---
+  window.handleRamadanVariantChange = function(select) {
+      const card = select.closest('.menu-item-card');
+      const img = card.querySelector('.menu-item-img img');
+      const selectedOption = select.options[select.selectedIndex];
+      
+      // تغيير الصورة
+      const newImg = selectedOption.dataset.img;
+      const baseImg = card.getAttribute('data-base-img-fallback');
+
+      if (newImg && newImg !== 'undefined' && newImg.trim() !== '') {
+          img.src = newImg;
+          // تحديث بيانات الكارت للمودال
+          card.dataset.img = newImg; 
+      } else if (baseImg) {
+          // العودة للصورة الأصلية إذا لم يكن للخيار صورة
+          img.src = baseImg;
+          card.dataset.img = baseImg;
+      }
+      
+      // 🔥 تحديث المكونات/التفاصيل بناء على النوع المختار 🔥
+      const detailsEncoded = selectedOption.dataset.details;
+      if (detailsEncoded && detailsEncoded !== 'undefined' && detailsEncoded !== '') {
+          const details = decodeURIComponent(detailsEncoded);
+          // تحويل النص إلى مصفوفة (كل سطر عنصر)
+          const detailsArray = details.split('\n').filter(x => x.trim());
+          // تحديث data-ingredients للكارت
+          card.dataset.ingredients = encodeURIComponent(JSON.stringify(detailsArray));
+      }
+      
+      calculateCardPrice(select);
+      validateSelection(card);
+  };
+
   window.handleTypeChange = function(select) {
       const card = select.closest('.menu-item-card');
       const riceDiv = card.querySelector('.menu-item-rice');
@@ -1069,15 +1675,26 @@
   window.validateSelection = function(card) {
       const riceSelect = card.querySelector('.rice-select');
       const typeSelect = card.querySelector('.type-select');
+      const ramadanSelect = card.querySelector('.ramadan-variant-select'); // 🔥
       const sizeBtns = card.querySelectorAll('.size-btn');
       const addBtn = card.querySelector('.add-to-cart');
+      const isMeal = card.dataset.isMeal === 'true';
+
       let isValid = true;
       let btnText = "إضافة إلى سلة مشترياتك";
 
-      if (sizeBtns.length > 0 && !card.querySelector('.size-btn.active')) { isValid = false; btnText = "اختر الحجم"; }
-      if (typeSelect && typeSelect.value === "") { isValid = false; if(btnText === "إضافة إلى سلة مشترياتك") btnText = "اختر نوع الطلب"; }
-      const riceDiv = card.querySelector('.menu-item-rice');
-      if (riceDiv && riceDiv.style.display !== 'none' && riceSelect && riceSelect.value === "") { isValid = false; if(btnText === "إضافة إلى سلة مشترياتك") btnText = "اختر نوع الرز"; }
+      if (!isMeal) {
+          if (sizeBtns.length > 0 && !card.querySelector('.size-btn.active')) { isValid = false; btnText = "اختر الحجم"; }
+          if (typeSelect && typeSelect.value === "") { isValid = false; if(btnText === "إضافة إلى سلة مشترياتك") btnText = "اختر نوع الطلب"; }
+          const riceDiv = card.querySelector('.menu-item-rice');
+          if (riceDiv && riceDiv.style.display !== 'none' && riceSelect && riceSelect.value === "") { isValid = false; if(btnText === "إضافة إلى سلة مشترياتك") btnText = "اختر نوع الرز"; }
+      }
+      
+      // 🔥 تحقق خاص لرمضان
+      if (ramadanSelect && ramadanSelect.value === "") {
+           isValid = false; 
+           btnText = "اختر الصنف";
+      }
 
       if (isValid) { addBtn.disabled = false; addBtn.innerText = "إضافة إلى سلة مشترياتك"; addBtn.style.opacity = "1"; calculateCardPrice(addBtn); } 
       else { addBtn.disabled = true; addBtn.innerText = btnText; addBtn.style.opacity = "0.6"; }
@@ -1108,6 +1725,7 @@
       const priceDisplay = card.querySelector('.price-display');
       const qty = parseInt(card.querySelector('.quantity-input').innerText);
       const hasPlain = card.dataset.hasPlain === 'true';
+      const isMeal = card.dataset.isMeal === 'true';
       const discountPercent = parseFloat(card.dataset.discount) || 0;
       
       let sizes = [];
@@ -1116,17 +1734,29 @@
       }
 
       let unitPrice = parseFloat(card.dataset.basePrice) || 0;
-      const activeSizeBtn = card.querySelector('.size-btn.active');
-      if (activeSizeBtn && sizes.length > 0) {
-          const index = parseInt(activeSizeBtn.dataset.index);
-          const sizeObj = sizes[index];
-          if (hasPlain) {
-              const typeSelect = card.querySelector('.type-select');
-              if (typeSelect && typeSelect.value === 'plain') unitPrice = parseFloat(sizeObj.plainPrice) || 0;
-              else if (typeSelect && typeSelect.value === 'with_rice') unitPrice = parseFloat(sizeObj.ricePrice) || 0;
-              else unitPrice = 0;
-          } else {
-              unitPrice = parseFloat(sizeObj.price) || 0;
+      
+      // 🔥 التعامل مع سعر خيارات رمضان
+      const ramadanSelect = card.querySelector('.ramadan-variant-select');
+      if (ramadanSelect && ramadanSelect.value) {
+          const selectedOption = ramadanSelect.options[ramadanSelect.selectedIndex];
+          // إذا كان للصنف سعر مختلف في sizes نأخذه، وإلا نستخدم السعر الأساسي
+          const variantPrice = parseFloat(selectedOption.dataset.price);
+          if (variantPrice > 0) unitPrice = variantPrice;
+      }
+      
+      if (!isMeal && !ramadanSelect) {
+          const activeSizeBtn = card.querySelector('.size-btn.active');
+          if (activeSizeBtn && sizes.length > 0) {
+              const index = parseInt(activeSizeBtn.dataset.index);
+              const sizeObj = sizes[index];
+              if (hasPlain) {
+                  const typeSelect = card.querySelector('.type-select');
+                  if (typeSelect && typeSelect.value === 'plain') unitPrice = parseFloat(sizeObj.plainPrice) || 0;
+                  else if (typeSelect && typeSelect.value === 'with_rice') unitPrice = parseFloat(sizeObj.ricePrice) || 0;
+                  else unitPrice = 0;
+              } else {
+                  unitPrice = parseFloat(sizeObj.price) || 0;
+              }
           }
       }
 
@@ -1155,10 +1785,14 @@
 
   window.addToCart = function(btn) {
       const card = btn.closest('.menu-item-card');
-      const title = card.querySelector('.menu-item-title').innerText;
+      const title = card.querySelector('.menu-item-title').innerText.replace('وجبة', '').replace('مع الرز', '').replace('بدون رز', '').trim();
       const qty = parseInt(card.querySelector('.quantity-input').innerText);
+      const category = card.dataset.category; // 🔥 قراءة التصنيف لتحديد وجبات رمضان
+      const isWithoutAdditions = card.dataset.isWithoutAdditions === 'true'; // Read from attribute
       
       const discountPercent = parseFloat(card.dataset.discount) || 0;
+      const isMeal = card.dataset.isMeal === 'true';
+
       let sizes = [];
       if (card.dataset.sizes) try { sizes = JSON.parse(decodeURIComponent(card.dataset.sizes)); } catch(e){}
       const hasPlain = card.dataset.hasPlain === 'true';
@@ -1166,17 +1800,29 @@
       let baseUnitPrice = parseFloat(card.dataset.basePrice) || 0;
       let sizeName = "";
       
-      const activeSizeBtn = card.querySelector('.size-btn.active');
-      if (activeSizeBtn && sizes.length > 0) {
-          sizeName = activeSizeBtn.innerText;
-          const index = parseInt(activeSizeBtn.dataset.index);
-          const sizeObj = sizes[index];
-          if (hasPlain) {
-              const typeSelect = card.querySelector('.type-select');
-              if (typeSelect && typeSelect.value === 'plain') baseUnitPrice = parseFloat(sizeObj.plainPrice) || 0;
-              else if (typeSelect && typeSelect.value === 'with_rice') baseUnitPrice = parseFloat(sizeObj.ricePrice) || 0;
-          } else {
-              baseUnitPrice = parseFloat(sizeObj.price) || 0;
+      // 🔥 استخراج اسم الصنف المختار لرمضان
+      const ramadanSelect = card.querySelector('.ramadan-variant-select');
+      if (ramadanSelect && ramadanSelect.value) {
+          sizeName = ramadanSelect.value;
+          // تحديث السعر بناء على الاختيار
+          const selectedOption = ramadanSelect.options[ramadanSelect.selectedIndex];
+          const variantPrice = parseFloat(selectedOption.dataset.price);
+          if(variantPrice > 0) baseUnitPrice = variantPrice;
+      }
+      
+      if (!isMeal && !ramadanSelect) {
+          const activeSizeBtn = card.querySelector('.size-btn.active');
+          if (activeSizeBtn && sizes.length > 0) {
+              sizeName = activeSizeBtn.innerText;
+              const index = parseInt(activeSizeBtn.dataset.index);
+              const sizeObj = sizes[index];
+              if (hasPlain) {
+                  const typeSelect = card.querySelector('.type-select');
+                  if (typeSelect && typeSelect.value === 'plain') baseUnitPrice = parseFloat(sizeObj.plainPrice) || 0;
+                  else if (typeSelect && typeSelect.value === 'with_rice') baseUnitPrice = parseFloat(sizeObj.ricePrice) || 0;
+              } else {
+                  baseUnitPrice = parseFloat(sizeObj.price) || 0;
+              }
           }
       }
 
@@ -1190,6 +1836,10 @@
           extraPrice = parseFloat(selectedOption.dataset.extra) || 0;
       }
 
+      if (isMeal && !sizeName) {
+          sizeName = "وجبة كاملة";
+      }
+
       let finalBasePrice = baseUnitPrice;
       if (discountPercent > 0) { finalBasePrice = baseUnitPrice - (baseUnitPrice * (discountPercent / 100)); }
       const finalUnitPrice = finalBasePrice + extraPrice;
@@ -1198,8 +1848,17 @@
       const typeSelect = card.querySelector('.type-select');
       if (typeSelect && typeSelect.value) { details += ` - ${typeSelect.options[typeSelect.selectedIndex].text}`; }
 
-      const cartItem = { title: title, size: details, rice: riceName, price: finalUnitPrice, qty: qty };
-      const existingItem = cartItems.find(i => i.title === cartItem.title && i.size === cartItem.size && i.rice === cartItem.rice);
+      // 🔥 إضافة التصنيف وحالة "بدون إضافات" للسلة 🔥
+      const cartItem = { 
+          title: title, 
+          size: details, 
+          rice: riceName, 
+          price: finalUnitPrice, 
+          qty: qty, 
+          category: category,
+          isWithoutAdditions: isWithoutAdditions
+      };
+      const existingItem = cartItems.find(i => i.title === cartItem.title && i.size === cartItem.size && i.rice === cartItem.rice && i.isWithoutAdditions === cartItem.isWithoutAdditions);
       if (existingItem) existingItem.qty += qty; else cartItems.push(cartItem);
 
       updateCartUI();
@@ -1239,7 +1898,6 @@
       totalHTML += `<div style="font-weight:bold; font-size:1.2em; margin-top:5px;">الإجمالي: ${finalTotal.toFixed(1)} ر.س</div>`;
       totalEl.innerHTML = totalHTML;
 
-      // حفظ السلة في الذاكرة المحلية
       localStorage.setItem('samam_cart', JSON.stringify(cartItems));
   }
 
@@ -1271,10 +1929,8 @@
       
       if (!code) return;
       
-      // Condition 1: Not logged in OR Logged in anonymously
       if (!currentUser || currentUser.isAnonymous) {
-          // Trigger Google Login directly
-          handleGoogleLogin();
+          handleGoogleLogin(); 
           return;
       }
 
@@ -1293,8 +1949,6 @@
               querySnapshot.forEach((doc) => { discountData = doc.data(); });
               
               if (discountData && discountData.active) {
-                  // Check usage in Firestore using userID and code (One-time usage check)
-                  // We check query collection 'discount_usage'
                   const usageQuery = query(collection(db, 'discount_usage'), 
                       where('userId', '==', currentUser.uid),
                       where('code', '==', code)
@@ -1326,44 +1980,87 @@
       btn.innerText = "تطبيق"; btn.disabled = false; updateCartUI();
   });
 
-  document.getElementById('sendOrder_v2').addEventListener('click', async () => {
-      if (cartItems.length === 0) return alert("السلة فارغة!");
+  // -----------------------------------------------------
+  // 🔥 Login Modal Logic 🔥
+  // -----------------------------------------------------
+  const loginModal = document.getElementById('loginModalOverlay');
+  const closeLoginBtn = document.getElementById('closeLoginModal');
+  const modalLoginGoogleBtn = document.getElementById('modalLoginGoogleBtn');
+  const modalLoginVisitorBtn = document.getElementById('modalLoginVisitorBtn');
+
+  if(closeLoginBtn) closeLoginBtn.addEventListener('click', () => { loginModal.style.display = 'none'; });
+  
+  if(modalLoginGoogleBtn) modalLoginGoogleBtn.addEventListener('click', async () => {
+      await handleGoogleLogin();
+      loginModal.style.display = 'none';
+  });
+
+  if(modalLoginVisitorBtn) modalLoginVisitorBtn.addEventListener('click', async () => {
+      await handleVisitorLogin();
+      loginModal.style.display = 'none';
+  });
+
+  document.getElementById('sendOrder_v2').addEventListener('click', async (e) => {
+      e.preventDefault(); 
+      
+      // 🔥 التحقق من تسجيل الدخول قبل أي شيء 🔥
+      if (!currentUser) {
+          // فتح نافذة تسجيل الدخول بدلاً من التنبيه
+          if(loginModal) loginModal.style.display = 'flex';
+          return;
+      }
+
+      if (cartItems.length === 0) return showNotification("السلة فارغة!", 'warning');
+      
+      // 🔥🔥 التحقق من كمية وجبات رمضان 🔥🔥
+      // حساب إجمالي عدد الوجبات الرمضانية في السلة
+      const ramadanItems = cartItems.filter(i => i.category === 'ramadan' || i.category === 'وجبات رمضان');
+      const totalRamadanQty = ramadanItems.reduce((sum, i) => sum + i.qty, 0);
+
+      // الشرط: إذا كان هناك أي وجبة رمضانية، يجب أن يكون المجموع الكلي لها 10 أو أكثر
+      if (totalRamadanQty > 0 && totalRamadanQty < 10) {
+          return showNotification("عذراً، الطلب من قسم وجبات رمضان يتطلب 10 وجبات على الأقل (يمكنك التنويع بين وجبات رمضان المختلفة)", 'warning');
+      }
+
       const name = document.getElementById('customerName').value.trim();
       const phone = document.getElementById('customerPhone').value.trim();
       const deliveryMethod = document.getElementById('deliveryMethod_v2').value;
       const paymentMethod = document.getElementById('paymentMethod_v2').value;
-      if (!name || !phone) return alert("الرجاء إدخال الاسم ورقم الجوال");
+      if (!name || !phone) return showNotification("الرجاء إدخال الاسم ورقم الجوال", 'warning');
 
       let extraDetails = "";
       if (deliveryMethod === 'توصيل') {
           const address = document.getElementById('addressDetail').value.trim();
           const landmark = document.getElementById('landmark').value.trim();
-          if (!address) return alert("الرجاء إدخال العنوان");
+          if (!address) return showNotification("الرجاء إدخال العنوان", 'warning');
           extraDetails = `العنوان: ${address}\nعلامة مميزة: ${landmark}`;
       } else if (deliveryMethod === 'تسليم إلى السيارة') {
           const type = document.getElementById('carType').value.trim();
           const plate = document.getElementById('carPlate').value.trim();
-          if (!type || !plate) return alert("بيانات السيارة مطلوبة");
+          if (!type || !plate) return showNotification("بيانات السيارة مطلوبة", 'warning');
           extraDetails = `السيارة: ${type} - ${plate}`;
       }
 
-      // تجهيز رسالة الواتساب بالتنسيق الجديد (بدون إيموجي)
+      let itemsFormatted = [];
       let subtotal = 0;
-      let itemsMsg = "";
       const itemsDetailsForDb = cartItems.map(item => {
           subtotal += item.price * item.qty;
-          
-          // بناء جزء الرسالة الخاص بهذا الصنف
-          itemsMsg += `الصنف: ${item.title} ${item.size}\n`;
-          if (item.rice) {
-              itemsMsg += `نوع الرز: ${item.rice}\n`;
-          }
-          itemsMsg += `الكمية: ${item.qty}\n`;
-          itemsMsg += `----------------\n`;
-
-          // بناء نص التفاصيل لقاعدة البيانات (مختصر)
           let detail = `- ${item.title} ${item.size} (عدد ${item.qty})`;
+          // Add unit price to string
+          detail += ` @ ${item.price} ر.س`;
+
           if (item.rice) detail += ` [رز: ${item.rice}]`;
+          if (item.isWithoutAdditions) detail += ` [بدون إضافات]`; // Add tag to string
+          
+          itemsFormatted.push({
+              title: item.title,
+              size: item.size,
+              rice: item.rice,
+              qty: item.qty,
+              price: item.price, // Unit price
+              isWithoutAdditions: item.isWithoutAdditions
+          });
+
           return detail;
       }).join('\n');
 
@@ -1372,40 +2069,13 @@
       const discountVal = subtotal * appliedDiscount;
       const finalTotalVal = subtotal + currentDeliveryFee - discountVal;
 
-      let msg = `*طلب جديد من موقع صمّام*\n`;
-      msg += `========================\n`;
-      msg += `*بيانات العميل*\n`;
-      msg += `الاسم: ${name}\n`;
-      msg += `الجوال: ${phone}\n`;
-      msg += `========================\n`;
-      msg += `*تفاصيل الطلب*\n`;
-      msg += itemsMsg;
-      
-      msg += `المجموع الفرعي: ${subtotal.toFixed(1)} ريال\n`;
-      
-      if (currentDeliveryFee > 0) {
-          msg += `رسوم التوصيل: ${currentDeliveryFee} ريال\n`;
-      }
-      
-      if (discountVal > 0) {
-          msg += `الخصم: -${discountVal.toFixed(1)} ريال\n`;
-      }
-      
-      msg += `*المجموع الكلي: ${finalTotalVal.toFixed(1)} ريال*\n`;
-      msg += `========================\n`;
-      msg += `طريقة الدفع: ${paymentMethod}\n`;
-      msg += `طريقة الاستلام: ${deliveryMethod}\n`;
-      
-      if (extraDetails) {
-          msg += `\n*تفاصيل الاستلام:*\n${extraDetails}\n`;
-      }
-
       const now = new Date();
       const ksaDateString = now.toLocaleString('ar-SA', { timeZone: 'Asia/Riyadh', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
 
       try {
           const orderData = {
               itemsString: itemsDetailsForDb, 
+              items: itemsFormatted, // 🔥 New structured array for admin panel
               total: finalTotalVal.toFixed(1), 
               status: 'جديد', 
               customerName: name, 
@@ -1417,7 +2087,6 @@
               createdAt: serverTimestamp()
           };
           
-          // --- 🔥 تعديل هام: حفظ الإيميل والصورة 🔥 ---
           if (currentUser) {
               orderData.userId = currentUser.uid;
               orderData.userEmail = currentUser.email;
@@ -1426,7 +2095,6 @@
 
           await addDoc(collection(db, 'orders'), orderData);
           
-          // Record discount usage if applied
           if (appliedCodeName && currentUser) { 
               await addDoc(collection(db, 'discount_usage'), {
                   userId: currentUser.uid,
@@ -1435,17 +2103,19 @@
               });
           }
 
-          // Show Rating Modal after order
+          showNotification("تم استلام طلبك بنجاح! سيتم تحضيره فوراً.", 'success');
+          
+          cartItems = [];
+          updateCartUI();
+          
+          closeCart();
+
           openRatingModal();
 
-          // مسح السلة بعد الطلب الناجح (اختياري، لكن أفضل للتجربة)
-          // cartItems = [];
-          // updateCartUI();
-
-      } catch(e) { console.error("Error", e); }
-      
-      // فتح الواتساب
-      window.open(`https://wa.me/966592372549?text=${encodeURIComponent(msg)}`, '_blank');
+      } catch(err) { 
+          console.error("Error", err); 
+          showNotification("حدث خطأ أثناء إرسال الطلب، الرجاء المحاولة مرة أخرى.", 'error');
+      }
   });
 
   const tabs = document.querySelectorAll('.category-btn');
@@ -1459,7 +2129,6 @@
       });
   });
 
-  // --- منطق تتبع الطلب ---
   const trackModal = document.getElementById('trackModalOverlay');
   const openTrackBtn = document.getElementById('openTrackModalBtn');
   const closeTrackBtn = document.getElementById('closeTrackModal');
@@ -1503,12 +2172,10 @@
                   const orders = [];
                   querySnapshot.forEach((doc) => { orders.push({id: doc.id, ...doc.data()}); });
                   
-                  // ترتيب النتائج محلياً لأن الفايربيس يحتاج إندكس للترتيب مع الفلترة
                   orders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
                   orders.forEach(order => {
                       const statusClass = `status-${order.status.replace(/\s+/g, '-')}`;
-                      // تلخيص الأصناف
                       const itemsSummary = order.itemsString.split('\n')[0] + (order.itemsString.split('\n').length > 1 ? ' ...' : '');
                       
                       ordersHTML += `
@@ -1540,6 +2207,26 @@
       if (current > lastScroll && current > 100) header.style.transform = 'translateY(-100%)'; else header.style.transform = 'translateY(0)';
       lastScroll = current;
   });
+
+  const customerInputsIds = ['customerName', 'customerPhone', 'deliveryMethod_v2', 'addressDetail', 'landmark', 'carType', 'carPlate', 'paymentMethod_v2'];
+  
+  customerInputsIds.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) {
+          el.addEventListener('input', saveCustomerDataToLocal);
+          el.addEventListener('change', saveCustomerDataToLocal);
+      }
+  });
+
+  function saveCustomerDataToLocal() {
+      const data = {};
+      customerInputsIds.forEach(k => {
+          const input = document.getElementById(k);
+          if(input) data[k] = input.value;
+      });
+      localStorage.setItem('samam_customer_data', JSON.stringify(data));
+  }
+
   window.onload = loadData;
 </script>
 
